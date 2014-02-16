@@ -711,7 +711,7 @@
             (lambda (ls)
               (cond
                 ((null? ls) '())
-                ((memp (lambda (y) (term=? (car ls) y)) (cdr ls))
+                ((memp (lambda (y) (term=? (car ls) y '())) (cdr ls))
                  (remove-dups (cdr ls)))
                 (else (cons (car ls) (remove-dups (cdr ls))))))))
     (lambda (u v)

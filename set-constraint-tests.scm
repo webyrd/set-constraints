@@ -1,6 +1,55 @@
 (load "mk.scm")
 (load "test-check.scm")
 
+(test "memb-1"
+  (run* (q)
+    (memb 5 '(5)))
+  '(_.0))
+
+(test "memb-2"
+  (run* (q)
+    (memb q '(5)))
+  '(5))
+
+(test "memb-3"
+  (run* (q)
+    (memb q 5))
+  '())
+
+(test "memb-4"
+  (run* (q)
+    (memb 5 `(5 . ,q)))
+  '())
+
+(test "memb-5"
+  (run* (q)
+    (memb 5 `(,q)))
+  '(5))
+
+(test "memb-6"
+  (run* (q)
+    (memb 5 '(6 5 7)))
+  '(_.0))
+
+(test "memb-7"
+  (run* (q)
+    (memb 5 '(6 8 7)))
+  '())
+
+(test "memb-8"
+  (run* (q)
+    (fresh (x)
+      (memb 5 `(,x ,x))))
+  '(_.0))
+
+(test "memb-9"
+  (run* (q)
+    (memb 5 `(,q ,q)))
+  '(5))
+
+
+
+
 (test "extracto-1"
   (run 1 (q) (fresh (t ls out) (extracto t ls out) (== `(,t ,ls ,out) q)))
   '((_.0 () ())))
