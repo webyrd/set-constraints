@@ -22,7 +22,7 @@
   (syntax-rules ()
     ((_ () e) (lambda () e))))
 
-(define-syntax lambdag@ ;; moved
+(define-syntax lambdag@
   (syntax-rules (:)
     ((_ (c) e) (lambda (c) e))
     ((_ (c : S D Y N T SC) e)
@@ -137,7 +137,7 @@
          (let ((x (var 'x)) ...)
            (bind* (g0 c) g ...)))))))
 
-(define lambdao ;; moved
+(define lambdao
   (syntax-rules ()
     ((_ args b0 b ...)
      (lambda args
@@ -206,7 +206,7 @@
       ((c) (choice c f))
       ((c f^) (choice c (lambdaf@ () (mplus (f) f^)))))))
 
-(define c->S (lambda (c) (car c))) ;; moved
+(define c->S (lambda (c) (car c)))
 (define c->D (lambda (c) (cadr c)))
 (define c->Y (lambda (c) (caddr c)))
 (define c->N (lambda (c) (cadddr c)))
@@ -335,7 +335,6 @@
        (or (member* u (car v)) (member* u (cdr v))))
       (else #f))))
 
-;;;
 
 (define drop-N-b/c-const
   (lambdag@ (c : S D Y N T SC)
@@ -572,7 +571,7 @@
               (loop c^^ (cdr fns^) (length (LOF))))
              (else (loop c^ (cdr fns^) (sub1 n))))))))))
 
-(define absento ;; changed
+(define absento
   (lambda (u v)
     (lambdag@ (c : S D Y N T SC)
       (cond
@@ -604,7 +603,7 @@
         (cond
           ((var? u) #f)
           (else (not (pred u))))))))
-;; moved 
+
 (define ground-non-symbol?
   (ground-non-<type>? symbol?))
 
@@ -626,9 +625,9 @@
         [(ground-non-number? u S) (mzero)]
         [(mem-check u Y S) (mzero)]
         [else (unit `(,S ,D ,Y (,u . ,N) ,T ,SC))]))))
-;; end moved
 
-(define =/= ;; moved
+
+(define =/=
   (lambda (u v)
     (lambdag@ (c : S D Y N T SC)
       (cond
@@ -692,16 +691,41 @@
         (else #f)))))
 
 ;; begin set constraints
-;; (define simplify
+
+;; Algorithm A from pages 4 & 5 of Stolzenburg's
+;; 'Membership-Constraints and Complexity in Logic Programming with
+;; Sets'
+;; (define simplifyo
 ;;   (lambda (mode x L)
 ;;     ))
 
-;; (define extract  
-;;   (lambda (x L rest)
-;;     (lambda (a)
-;;       (let ((x (walk* x a))
-;;             (L (walk* L a)))
-;;         ))))
+(define extracto
+  (lambda (t ls out)
+    (conde
+      ((== '() ls) (== '() out))
+      ((fresh (a d)
+         (conda
+         ((fresh ()
+            (== `(,a . ,d) ls)
+            (lambdag@ (c : S D Y N T SC)
+              ;; are a and t syntactically identical?
+              (if (eq? (unify a t S) S)
+                  (succeed c)
+                  (fail c))))
+          fail)
+         ((fresh ()
+            (== `(,a . ,d) ls)
+            ;; proceed only if a and t fail to unify
+            (condu
+              ((== a t)
+               fail)
+              (succeed)))
+          (extracto t d out))
+         ((fresh (res)
+            (== `(,a . ,d) ls)
+            (== `(,a . ,res) out)
+            (extracto t d res)))))))))
+
 ;; end set constraints
 
 (define reify
