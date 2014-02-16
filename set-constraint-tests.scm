@@ -140,25 +140,22 @@
 
 (test "memb-22"
   (run* (q)
-    (fresh (x)
-      (memb q '(5))
-      (memb q '(6))
-      nevero))
+    (memb q '(5))
+    (memb q '(6))
+    nevero)
   '())
 
 (test "memb-23"
   (run* (q)
-    (fresh (x)
-      (memb q '(5 6))
-      (memb q '(7 8))))
+    (memb q '(5 6))
+    (memb q '(7 8)))
   '())
 
 (test "memb-24"
   (run* (q)
-    (fresh (x)
-      (memb q '(5 6))
-      (memb q '(7 8))
-      nevero))
+    (memb q '(5 6))
+    (memb q '(7 8))
+    nevero)
   '())
 
 
