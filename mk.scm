@@ -650,7 +650,7 @@
         ((unify u v S) =>
          (lambda (S0)
            (cond
-             ((==fail-check S0 D Y N T) (mzero))
+             ((==fail-check S0 D Y N T SC) (mzero))
              (else (unit `(,S0 ,D ,Y ,N ,T ,SC))))))
         (else (mzero))))))
 
@@ -659,13 +659,14 @@
 (define fail (== #f #t))
 
 (define ==fail-check
-  (lambda (S0 D Y N T)
+  (lambda (S0 D Y N T SC)
     (cond
       ((atomic-fail-check S0 Y ground-non-symbol?) #t)
       ((atomic-fail-check S0 N ground-non-number?) #t)
       ((symbolo-numbero-fail-check S0 Y N) #t)
       ((=/=-fail-check S0 D) #t)
       ((absento-fail-check S0 T) #t)
+      ((memb-fail-check S0 SC) #t)
       (else #f))))
 
 (define atomic-fail-check
@@ -681,6 +682,12 @@
 (define absento-fail-check
   (lambda (S T)
     (exists (lambda (t) (mem-check (lhs t) (rhs t) S)) T)))
+
+;; TODO
+;; implement
+(define memb-fail-check
+  (lambda (S SC)
+    #f))
 
 (define =/=-fail-check
   (lambda (S D)
