@@ -859,7 +859,11 @@
                      (lambda (t)
                        (anyvar? t R))
                      T)
-                    SC))))))))
+                    (remp
+                     (lambda (sc)
+                       (let ((x (walk (car sc) R)))
+                         (var? x)))
+                     SC)))))))))
 
 (define reify+
   (lambda (v R D Y N T SC)
@@ -868,14 +872,15 @@
           (walk* Y R)
           (walk* N R)
           (rem-subsumed-T (walk* T R))
-          SC)))
+          (walk* SC R))))
 
 (define form
   (lambda (v D Y N T SC)
     (let ((fd (sort-D D))
           (fy (sorter Y))
           (fn (sorter N))
-          (ft (sorter T)))
+          (ft (sorter T))
+          (fsc (sorter SC)))
       (let ((fd (if (null? fd) fd
                     (let ((fd (drop-dot-D fd)))
                       `((=/= . ,fd)))))
@@ -883,12 +888,14 @@
             (fn (if (null? fn) fn `((num . ,fn))))
             (ft (if (null? ft) ft
                     (let ((ft (drop-dot ft)))
-                      `((absento . ,ft))))))
+                      `((absento . ,ft)))))
+            (fsc (if (null? fsc) fsc `((memb . ,fsc)))))
         (cond
           ((and (null? fd) (null? fy)
-                (null? fn) (null? ft))
+                (null? fn) (null? ft)
+                (null? fsc))
            v)
-          (else (append `(,v) fd fn fy ft)))))))
+          (else (append `(,v) fd fn fy ft fsc)))))))
 
 (define sort-D
   (lambda (D)
