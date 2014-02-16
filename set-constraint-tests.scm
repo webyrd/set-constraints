@@ -103,6 +103,32 @@
     (memb q '(5 6 5 7 7 5)))
   '(6 7 5))
 
+(test "memb-19"
+  (run* (q)
+    (memb q '(5 6))
+    (memb q '(6 7)))
+  '(6))
+
+(test "memb-20"
+  (run* (q)
+    (memb q '(5 6))
+    (memb q '(7 6)))
+  '(6))
+
+(test "memb-20"
+  (run* (q)
+    (fresh (x)
+      (memb q '(5 6))
+      (memb q `(7 ,x))))
+  '(5 6))
+
+(test "memb-21"
+  (run* (q)
+    (fresh (x)
+      (memb q `(7 ,x))
+      (memb q '(5 6))))
+  '(5 6))
+
 
 
 (test "membo-1"
