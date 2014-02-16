@@ -91,6 +91,18 @@
       (memb q `(,x))))
   '(5))
 
+(test "memb-17"
+  (run* (q)
+    (fresh (x)
+      (memb q `(,x))
+      (memb q '(5))))
+  '(5))
+
+(test "memb-18"
+  (run* (q)
+    (memb q '(5 6 5 7 7 5)))
+  '(6 7 5))
+
 
 
 (test "membo-1"
