@@ -184,6 +184,32 @@
     nevero)
   '())
 
+(test "memb-27"
+  (run* (q)
+    (memb q '(5 6))
+    (memb `(,q) '((7) (8))))
+  '())
+
+(test "memb-28"
+  (run* (q)
+    (memb `(,q) '((7) (8)))
+    (memb q '(5 6)))
+  '())
+
+(test "memb-29"
+  (run* (q)
+    (memb q '(5 6))
+    (memb `(,q) '((7) (8)))
+    nevero)
+  '())
+
+(test "memb-30"
+  (run* (q)
+    (memb `(,q) '((7) (8)))
+    (memb q '(5 6))
+    nevero)
+  '())
+
 
 
 (test "membo-1"
