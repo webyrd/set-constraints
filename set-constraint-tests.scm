@@ -210,6 +210,18 @@
     nevero)
   '())
 
+(test "memb-31"
+  (run* (q)
+    (fresh (x y)
+      (memb x '(5 6))
+      (memb y '(7 8))
+      (== `(,x ,y) q)))
+  '((5 7)
+    (6 7)
+    (5 8)
+    (6 8)))
+
+
 
 
 (test "membo-1"
