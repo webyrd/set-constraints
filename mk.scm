@@ -170,7 +170,7 @@
               (let ((z ((reify x) final-c)))
                 (choice z empty-f))))
           empty-c))))))
- 
+
 (define-syntax run*
   (syntax-rules ()
     ((_ (x) g ...) (run #f (x) g ...))))
@@ -732,7 +732,7 @@
                            ((null? ls)
                             (mzero))
                            ((null? (cdr ls))
-                            (let ((S (unify x (car ls) '())))
+                            (let ((S (unify x (car ls) S)))
                               (unit `(,S ,D ,Y ,N ,T ,SC))))
                            (else
                             ;; anti-unify all y in ls

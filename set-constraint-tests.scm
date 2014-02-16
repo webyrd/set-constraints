@@ -72,6 +72,25 @@
       (memb q `((5 ,x) (5 ,x)))))
   '((5 _.0)))
 
+(test "memb-14"
+  (run* (q)
+    (memb q '(5))
+    (memb q '(5)))
+  '(5))
+
+(test "memb-15"
+  (run* (q)
+    (memb q '(5))
+    (memb q '(6)))
+  '())
+
+(test "memb-16"
+  (run* (q)
+    (fresh (x)
+      (memb q '(5))
+      (memb q `(,x))))
+  '(5))
+
 
 
 (test "membo-1"
