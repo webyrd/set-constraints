@@ -859,11 +859,7 @@
                      (lambda (t)
                        (anyvar? t R))
                      T)
-                    (remp
-                     (lambda (sc)
-                       (let ((x (walk (car sc) R)))
-                         (var? x)))
-                     SC)))))))))
+                    SC))))))))
 
 (define reify+
   (lambda (v R D Y N T SC)
