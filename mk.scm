@@ -756,6 +756,25 @@
         ((=/= x y)
          (membo x rest))))))
 
+
+;; Algorithm C, from page 6 of Stolzenburg's 'Membership-Constraints
+;; and Complexity in Logic Programming with Sets'
+(define unify-setso
+  (lambda (A B)
+    (fresh ()
+      (subset-ofo A B)
+      (subset-ofo B A))))
+
+(define subset-ofo
+  (lambda (A B)
+    (conde
+      ((== '() A))
+      ((fresh (x rest)
+         (== `(,x . ,rest) A)
+         (membo x B)
+         (subset-ofo rest B))))))
+
+
 ;; end set constraints
 
 (define reify
