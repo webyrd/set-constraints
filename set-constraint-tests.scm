@@ -151,6 +151,18 @@
     (memb q '(7 8)))
   '())
 
+;; TODO
+;;
+;; this test diverges, but should not
+;;
+;; 1. update memb code to check/normalize constraints after each
+;; unification
+;;
+;; 2. update memb code to verify that the *conjunction* of memb
+;; constraints is satisfiable (as opposed to only checking
+;; satisfiability of individual memb constraints).  No need to
+;; enumerate the answers to check satisfiability--just ensure at least
+;; one answer exists.
 (test "memb-24"
   (run* (q)
     (memb q '(5 6))
