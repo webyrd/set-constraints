@@ -131,6 +131,40 @@
     ((_.0) (_.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0))
     ((_.0) (_.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0 _.0))))
 
+(test "unify-setso-experiment-1a"
+;; experiment 1 on p. 10 of Stolzenburg's 'Membership-Constraints and
+;; Complexity in Logic Programming with Sets'
+  (run* (A)
+    (fresh (B w x y z)
+      (== `(,w ,x ,y ,z) A)
+      (== '(a b) B)
+      (unify-setso A B)))
+  '((b a a a)
+    (a b a a)
+    (b b a a)
+    (a a b a)
+    (b a b a)
+    (a a a b)
+    (a b b a)
+    (b a a b)
+    (b b b a)
+    (a b a b)
+    (a a b b)
+    (b b a b)
+    (b a b b)
+    (a b b b)))
+
+(test "unify-setso-experiment-1b"
+;; experiment 1 on p. 10 of Stolzenburg's 'Membership-Constraints and
+;; Complexity in Logic Programming with Sets'  
+  (length
+   (run* (A)
+    (fresh (B w x y z)
+      (== `(,w ,x ,y ,z) A)
+      (== '(a b) B)
+      (unify-setso A B))))
+  '14)
+
 #!eof
 
 (test "memb-1"
