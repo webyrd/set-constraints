@@ -736,7 +736,7 @@
                            (else
                             ;; anti-unify all y in ls
                             (let ((au-term (au ls)))
-                              (let ((S (== au-term x S)))
+                              (let ((S (unify au-term x S)))
                                 (let ((x (walk* x S)))
                                   (let ((SC `((,x . ,ls) . ,SC)))
                                     (unit `(,S ,D ,Y ,N ,T ,SC)))))))))))))

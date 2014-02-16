@@ -47,6 +47,24 @@
     (memb 5 `(,q ,q)))
   '(5))
 
+(test "memb-10"
+  (run* (q)
+    (fresh (x)
+      (memb q `((,x) (,x)))))
+  '((_.0)))
+
+(test "memb-11"
+  (run* (q)
+    (fresh (x y)
+      (memb q `((5 ,x) (6 ,y)))))
+  '((_.0 _.1)))
+
+(test "memb-12"
+  (run* (q)
+    (fresh (x y)
+      (memb q `((5 ,x) (5 ,y)))))
+  '((5 _.0)))
+
 
 
 
