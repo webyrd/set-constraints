@@ -322,14 +322,63 @@
 (test "memb-47"
   (run* (q)
     (=/= q 5)
-    (memb 5 `(6 ,q 8))    
+    (memb 5 `(6 ,q 8))
     nevero)
   '())
 
 (test "memb-48"
   (run* (q)
     (memb 5 `(6 ,q 8))
-    (=/= q 5)    
+    (=/= q 5)
+    nevero)
+  '())
+
+(test "memb-49"
+  (run* (q)
+    (memb q '(5 6))
+    (memb q '(6 7))
+    (=/= q 6))
+  '())
+
+(test "memb-50"
+  (run* (q)
+    (memb q '(5 6))
+    (=/= q 6)
+    (memb q '(6 7)))
+  '())
+
+(test "memb-51"
+  (run* (q)
+    (=/= q 6)
+    (memb q '(5 6))
+    (memb q '(6 7)))
+  '())
+
+;; These seem like the difficult tests.  The papers seem to only show
+;; how to solve individual memb constraints, rather than conjunctions
+;; of constraints.  Aren't these problems essentially trying to find
+;; the intersection of the rhs lists?
+(test "memb-52"
+  (run* (q)
+    (memb q '(5 6))
+    (memb q '(6 7))
+    (=/= q 6)
+    nevero)
+  '())
+
+(test "memb-53"
+  (run* (q)
+    (memb q '(5 6))
+    (=/= q 6)
+    (memb q '(6 7))
+    nevero)
+  '())
+
+(test "memb-54"
+  (run* (q)
+    (=/= q 6)
+    (memb q '(5 6))
+    (memb q '(6 7))
     nevero)
   '())
 
