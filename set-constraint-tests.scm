@@ -158,6 +158,20 @@
     nevero)
   '())
 
+(test "memb-25"
+  (run* (q)
+    (memb q '(5 6))
+    (memb q '(7 8 9 10 11 12 13 14))
+    nevero)
+  '())
+
+(test "memb-26"
+  (run* (q)
+    (memb q '(7 8 9 10 11 12 13 14))
+    (memb q '(5 6))
+    nevero)
+  '())
+
 
 
 (test "membo-1"
