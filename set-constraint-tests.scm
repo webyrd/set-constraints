@@ -1,6 +1,15 @@
 (load "mk.scm")
 (load "test-check.scm")
 
+(define anyo
+  (lambda (g)
+    (conde
+      (g)
+      ((anyo g)))))
+
+(define nevero (anyo fail))
+(define alwayso (anyo succeed))
+
 (test "memb-1"
   (run* (q)
     (memb 5 '(5)))
@@ -128,6 +137,29 @@
       (memb q `(7 ,x))
       (memb q '(5 6))))
   '(5 6))
+
+(test "memb-22"
+  (run* (q)
+    (fresh (x)
+      (memb q '(5))
+      (memb q '(6))
+      nevero))
+  '())
+
+(test "memb-23"
+  (run* (q)
+    (fresh (x)
+      (memb q '(5 6))
+      (memb q '(7 8))))
+  '())
+
+(test "memb-24"
+  (run* (q)
+    (fresh (x)
+      (memb q '(5 6))
+      (memb q '(7 8))
+      nevero))
+  '())
 
 
 
