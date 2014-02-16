@@ -1,3 +1,6 @@
+;; anti-unification algorithm is needed for membership/set constraints
+(load "au.scm")
+
 (define sort list-sort)
 
 (define empty-c '(() () () () () ()))
@@ -690,7 +693,59 @@
 	 (lambda (S+) (eq? S+ S)))
         (else #f)))))
 
-;; begin set constraints
+
+;; *** begin set constraints ***
+
+;; membership constraint
+;;
+;; (memb t ls)
+;;
+;; t can be an arbitrary term
+;; ls must be a length-instantiated proper list (of arbitrary terms)
+(define memb
+  (lambda (u v)
+    (algorithm-A u v)))
+
+(define algorithm-A
+  (letrec ((remove-dups
+            (lambda (ls)
+              (cond
+                ((null? ls) '())
+                ((memp (lambda (y) (term=? (car ls) y)) (cdr ls))
+                 (remove-dups (cdr ls)))
+                (else (cons (car ls) (remove-dups (cdr ls))))))))
+    (lambda (u v)
+      (lambdag@ (c : S D Y N T SC)
+        (let ((x (walk* u S))
+              (ls (walk* v S)))
+          (cond
+            ((list? ls)
+             (cond
+               ((exists (lambda (y) (term=? x y '())) ls)
+                ;; there exists a 'y' in 'ls' such that x = y (syntactic
+                ;; identity); therefore the constraint is already solved
+                c)
+               (else (let ((ls (filter (lambda (y) (unify x y '())) ls)))
+                       (let ((ls (remove-dups ls)))
+                         (cond
+                           ((null? ls)
+                            (mzero))
+                           ((null? (cdr ls))
+                            (let ((S (unify x (car ls) '())))
+                              (unit `(,S ,D ,Y ,N ,T ,SC))))
+                           (else
+                            ;; anti-unify all y in ls
+                            (let ((au-term (au ls)))
+                              (let ((S (== au-term x S)))
+                                (let ((x (walk* x S)))
+                                  (let ((SC `((,x . ,ls) . ,SC)))
+                                    (unit `(,S ,D ,Y ,N ,T ,SC)))))))))))))
+            (else
+             ;; violation!  second argument to memb must be a
+             ;; length-instantiated proper list
+             (mzero))))))))
+
+
 
 ;; Algorithm A from pages 4 & 5 of Stolzenburg's
 ;; 'Membership-Constraints and Complexity in Logic Programming with
@@ -726,8 +781,7 @@
          ((fresh ()
             (== `(,a . ,d) ls)
             (lambdag@ (c : S D Y N T SC)
-              ;; are a and t syntactically identical?
-              (if (eq? (unify a t S) S)
+              (if (term=? a t S)
                   (succeed c)
                   (fail c))))
           fail)
@@ -774,8 +828,8 @@
          (membo x B)
          (subset-ofo rest B))))))
 
+;; *** end set constraints ***
 
-;; end set constraints
 
 (define reify
   (lambda (x)
