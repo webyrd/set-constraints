@@ -163,7 +163,84 @@
       (== `(,w ,x ,y ,z) A)
       (== '(a b) B)
       (unify-setso A B))))
-  '14)
+  14)
+
+(test "unify-setso-experiment-2a"
+;; experiment 2 on p. 10 of Stolzenburg's 'Membership-Constraints and
+;; Complexity in Logic Programming with Sets'
+;;
+;; Hmmm.  Doesn't seem to match the number of answers from the paper.
+  (run* (q)
+    (fresh (A B x y z)
+      (== `(,x ,y ,z) A)
+      (== `(,x ,y ,z) B)
+      (unify-setso A B)
+      (== `(,A ,B) q)))
+  '(((_.0 _.0 _.0) (_.0 _.0 _.0))
+    (((_.0 _.1 _.0) (_.0 _.1 _.0)) (=/= ((_.0 _.1))))
+    (((_.0 _.1 _.1) (_.0 _.1 _.1)) (=/= ((_.0 _.1))))
+    (((_.0 _.0 _.1) (_.0 _.0 _.1)) (=/= ((_.0 _.1))))
+    (((_.0 _.1 _.2) (_.0 _.1 _.2)) (=/= ((_.0 _.1)) ((_.0 _.2)) ((_.1 _.2))))))
+
+(test "unify-setso-experiment-2b"
+  ;; experiment 2 on p. 10 of Stolzenburg's 'Membership-Constraints and
+  ;; Complexity in Logic Programming with Sets'
+  (length
+   (run* (q)
+     (fresh (A B x y z)
+       (== `(,x ,y ,z) A)
+       (== `(,x ,y ,z) B)
+       (unify-setso A B)
+       (== `(,A ,B) q))))
+  5)
+
+(test "unify-setso-experiment-3a"
+  ;; experiment 3 on p. 10 of Stolzenburg's 'Membership-Constraints and
+  ;; Complexity in Logic Programming with Sets'
+  (run* (q)
+    (fresh (A B x y1 z1 y2 z2)
+      (== `(,x (f ,y1) (g ,y1) (g ,z1)) A)
+      (== `(,x (f ,y2) (g ,y2) (g ,z2)) B)
+      (unify-setso A B)
+      (== `(,A ,B) q)))
+  '((((g _.0) (f _.0) (g _.0) (g _.0))
+     ((g _.0) (f _.0) (g _.0) (g _.0)))
+    (((f _.0) (f _.0) (g _.0) (g _.0))
+     ((f _.0) (f _.0) (g _.0) (g _.0)))
+    ((((g _.0) (f _.1) (g _.1) (g _.0))
+      ((g _.0) (f _.1) (g _.1) (g _.0)))
+     (=/= ((_.0 _.1))))
+    ((((g _.0) (f _.1) (g _.1) (g _.0))
+      ((g _.0) (f _.1) (g _.1) (g _.1)))
+     (=/= ((_.0 _.1))))
+    ((((f _.0) (f _.0) (g _.0) (g _.1))
+      ((f _.0) (f _.0) (g _.0) (g _.1)))
+     (=/= ((_.0 _.1))))
+    ((((g _.0) (f _.0) (g _.0) (g _.1))
+      ((g _.0) (f _.0) (g _.0) (g _.1)))
+     (=/= ((_.0 _.1))))
+    ((((g _.0) (f _.1) (g _.1) (g _.1))
+      ((g _.0) (f _.1) (g _.1) (g _.0)))
+     (=/= ((_.0 _.1))))
+    (((_.0 (f _.1) (g _.1) (g _.1))
+      (_.0 (f _.1) (g _.1) (g _.1)))
+     (=/= ((_.0 (f _.1))) ((_.0 (g _.1)))))
+    (((_.0 (f _.1) (g _.1) (g _.2))
+      (_.0 (f _.1) (g _.1) (g _.2)))
+     (=/= ((_.0 (f _.1))) ((_.0 (g _.1))) ((_.0 (g _.2)))
+          ((_.1 _.2))))))
+
+(test "unify-setso-experiment-3b"
+  ;; experiment 3 on p. 10 of Stolzenburg's 'Membership-Constraints and
+  ;; Complexity in Logic Programming with Sets'
+  (length (run* (q)
+            (fresh (A B x y1 z1 y2 z2)
+              (== `(,x (f ,y1) (g ,y1) (g ,z1)) A)
+              (== `(,x (f ,y2) (g ,y2) (g ,z2)) B)
+              (unify-setso A B)
+              (== `(,A ,B) q))))
+  9)
+
 
 #!eof
 
