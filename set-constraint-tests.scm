@@ -221,6 +221,25 @@
     (5 8)
     (6 8)))
 
+(test "memb-32"
+  (run* (q)
+    (fresh (x y)
+      (memb x '(5 6))
+      (memb y '(7 8))
+      (memb x '(1 2))
+      (== `(,x ,y) q)))
+  '())
+
+(test "memb-33"
+  (run* (q)
+    (fresh (x y)
+      (memb x '(5 6))
+      (memb y '(7 8))
+      (memb x '(1 2))
+      nevero
+      (== `(,x ,y) q)))
+  '())
+
 
 
 
