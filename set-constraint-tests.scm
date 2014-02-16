@@ -287,6 +287,52 @@
     nevero)
   '())
 
+(test "memb-42"
+  (run* (q)
+    (memb 5 '(6 7 8))
+    nevero)
+  '())
+
+(test "memb-43"
+  (run* (q)
+    (== q 7)
+    (memb 5 `(6 ,q 8))    
+    nevero)
+  '())
+
+(test "memb-44"
+  (run* (q)
+    (memb 5 `(6 ,q 8))
+    (== q 7)    
+    nevero)
+  '())
+
+(test "memb-45"
+  (run* (q)
+    (=/= q 5)
+    (memb 5 `(6 ,q 8)))
+  '())
+
+(test "memb-46"
+  (run* (q)
+    (memb 5 `(6 ,q 8))
+    (=/= q 5))
+  '())
+
+(test "memb-47"
+  (run* (q)
+    (=/= q 5)
+    (memb 5 `(6 ,q 8))    
+    nevero)
+  '())
+
+(test "memb-48"
+  (run* (q)
+    (memb 5 `(6 ,q 8))
+    (=/= q 5)    
+    nevero)
+  '())
+
 
 
 (test "membo-1"
