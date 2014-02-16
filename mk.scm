@@ -750,10 +750,25 @@
 (define force-memb-constraints
   (lambdag@ (c : S D Y N T SC)
     (cond
-      ((update-memb-constraints c)
-       ;; TODO: force the constraints
-       )
-      (else (mzero)))))
+      ((update-memb-constraints c) =>
+       (lambda (c)
+         ;; use the 'first-fail' principle: start with the constraint
+         ;; with the shortest list       
+         (let ((SC (sort (lambda (sc1 sc2) (< (length (cdr sc1)) (length (cdr sc2)))) SC)))
+           (let loop ((SC SC)
+                      (c c))
+             (cond
+               ((null? SC) (succeed c))
+               (else
+                (let ((sc (car SC)))
+                  (let ((u (car sc))
+                        (v (cdr sc)))
+                    ((fresh ()
+                       (membo u v)
+                       (lambdag@ (c)
+                         (loop (cdr SC) c)))
+                     c)))))))))
+      (else (fail c)))))
 
 (define update-memb-constraints
   (lambdag@ (c : S D Y N T SC)

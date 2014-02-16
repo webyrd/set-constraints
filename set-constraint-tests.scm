@@ -57,12 +57,19 @@
   (run* (q)
     (fresh (x y)
       (memb q `((5 ,x) (6 ,y)))))
-  '((_.0 _.1)))
+  '((5 _.0)
+    (6 _.0)))
 
 (test "memb-12"
   (run* (q)
     (fresh (x y)
       (memb q `((5 ,x) (5 ,y)))))
+  '((5 _.0) (5 _.0)))
+
+(test "memb-13"
+  (run* (q)
+    (fresh (x)
+      (memb q `((5 ,x) (5 ,x)))))
   '((5 _.0)))
 
 
