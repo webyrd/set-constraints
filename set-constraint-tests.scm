@@ -240,6 +240,40 @@
       (== `(,x ,y) q)))
   '())
 
+(test "memb-34"
+  (run* (q)
+    (memb q `(,q)))
+  '(_.0))
+
+(test "memb-35"
+  (run* (q)
+    (memb q `((,q))))
+  '())
+
+(test "memb-36"
+  (run* (q)
+    (memb q `(5 (,q) 6)))
+  '(5 6))
+
+(test "memb-37"
+  (run* (q)
+    (memb q `((,q)))
+    nevero)
+  '())
+
+(test "memb-38"
+  (run* (q)
+    (memb q `(5 (,q) 6))
+    (memb q `(7 8)))
+  '())
+
+(test "memb-39"
+  (run* (q)
+    (memb q `(5 (,q) 6))
+    (memb q `(7 8))
+    nevero)
+  '())
+
 
 
 
