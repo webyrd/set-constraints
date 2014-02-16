@@ -165,6 +165,7 @@
      (take n
        (lambdaf@ ()
          ((fresh (x) g0 g ...
+            force-memb-constraints
             (lambdag@ (final-c)
               (let ((z ((reify x) final-c)))
                 (choice z empty-f))))
@@ -745,58 +746,30 @@
              ;; length-instantiated proper list
              (mzero))))))))
 
+;; force memb constraints to be unfrozen, just before reification
+(define force-memb-constraints
+  (lambdag@ (c : S D Y N T SC)
+    (cond
+      ((update-memb-constraints c)
+       ;; TODO: force the constraints
+       )
+      (else (mzero)))))
 
-
-;; Algorithm A from pages 4 & 5 of Stolzenburg's
-;; 'Membership-Constraints and Complexity in Logic Programming with
-;; Sets'
-
-;; (define simplifyo
-;;   (lambda (mode t ls)
-;;     (conda
-;;       ((fresh (rest)
-;;          (extracto t ls rest))
-;;        (=/= '() rest)
-;;        (fresh (sorted)
-;;          (sorto rest sorted)
-;;          (fresh (single)
-;;            (conda
-;;              ((== `(,single) sorted)
-;;               (== term single))
-;;              (
-;;               ;
-;;               (condu
-;;                 ((== 'memb mode)
-;;                  )
-;;                 ((== 'wake mode)
-;;                  (membo t sorted))))))))
-;;       (succeed))))
-
-(define extracto
-  (lambda (t ls out)
-    (conde
-      ((== '() ls) (== '() out))
-      ((fresh (a d)
-         (conda
-         ((fresh ()
-            (== `(,a . ,d) ls)
-            (lambdag@ (c : S D Y N T SC)
-              (if (term=? a t S)
-                  (succeed c)
-                  (fail c))))
-          fail)
-         ((fresh ()
-            (== `(,a . ,d) ls)
-            ;; proceed only if a and t fail to unify
-            (condu
-              ((== a t)
-               fail)
-              (succeed)))
-          (extracto t d out))
-         ((fresh (res)
-            (== `(,a . ,d) ls)
-            (== `(,a . ,res) out)
-            (extracto t d res)))))))))
+(define update-memb-constraints
+  (lambdag@ (c : S D Y N T SC)
+    (let loop ((SC SC)
+               (c c))
+      (cond
+        ((null? SC) c)
+        (else
+         (let ((sc (car SC)))
+           (let ((u (car sc))
+                 (v (cdr sc)))
+             (cond
+               (((algorithm-A u v) c) =>
+                (lambda (c)
+                  (loop (cdr SC) c)))
+               (else (mzero))))))))))
 
 
 ;; Algorithm B, from page 6 of Stolzenburg's 'Membership-Constraints
@@ -839,8 +812,7 @@
              (D (walk* (c->D c) S))
              (Y (walk* (c->Y c) S))
              (N (walk* (c->N c) S))
-             (T (walk* (c->T c) S))
-             (SC (walk* (c->SC c) S)))
+             (T (walk* (c->T c) S)))
         (let ((v (walk* x S)))
           (let ((R (reify-S v '())))
             (reify+ v R
@@ -858,25 +830,22 @@
                     (remp 
                      (lambda (t)
                        (anyvar? t R))
-                     T)
-                    SC))))))))
+                     T)))))))))
 
 (define reify+
-  (lambda (v R D Y N T SC)
+  (lambda (v R D Y N T)
     (form (walk* v R)
           (walk* D R)
           (walk* Y R)
           (walk* N R)
-          (rem-subsumed-T (walk* T R))
-          (walk* SC R))))
+          (rem-subsumed-T (walk* T R)))))
 
 (define form
-  (lambda (v D Y N T SC)
+  (lambda (v D Y N T)
     (let ((fd (sort-D D))
           (fy (sorter Y))
           (fn (sorter N))
-          (ft (sorter T))
-          (fsc (sorter SC)))
+          (ft (sorter T)))
       (let ((fd (if (null? fd) fd
                     (let ((fd (drop-dot-D fd)))
                       `((=/= . ,fd)))))
@@ -884,14 +853,12 @@
             (fn (if (null? fn) fn `((num . ,fn))))
             (ft (if (null? ft) ft
                     (let ((ft (drop-dot ft)))
-                      `((absento . ,ft)))))
-            (fsc (if (null? fsc) fsc `((memb . ,fsc)))))
+                      `((absento . ,ft))))))
         (cond
           ((and (null? fd) (null? fy)
-                (null? fn) (null? ft)
-                (null? fsc))
+                (null? fn) (null? ft))
            v)
-          (else (append `(,v) fd fn fy ft fsc)))))))
+          (else (append `(,v) fd fn fy ft)))))))
 
 (define sort-D
   (lambda (D)
