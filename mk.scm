@@ -695,9 +695,27 @@
 ;; Algorithm A from pages 4 & 5 of Stolzenburg's
 ;; 'Membership-Constraints and Complexity in Logic Programming with
 ;; Sets'
+
 ;; (define simplifyo
-;;   (lambda (mode x L)
-;;     ))
+;;   (lambda (mode t ls)
+;;     (conda
+;;       ((fresh (rest)
+;;          (extracto t ls rest))
+;;        (=/= '() rest)
+;;        (fresh (sorted)
+;;          (sorto rest sorted)
+;;          (fresh (single)
+;;            (conda
+;;              ((== `(,single) sorted)
+;;               (== term single))
+;;              (
+;;               ;
+;;               (condu
+;;                 ((== 'memb mode)
+;;                  )
+;;                 ((== 'wake mode)
+;;                  (membo t sorted))))))))
+;;       (succeed))))
 
 (define extracto
   (lambda (t ls out)
@@ -725,6 +743,18 @@
             (== `(,a . ,d) ls)
             (== `(,a . ,res) out)
             (extracto t d res)))))))))
+
+
+;; Algorithm B, from page 6 of Stolzenburg's 'Membership-Constraints
+;; and Complexity in Logic Programming with Sets'
+(define membo
+  (lambda (x ls)
+    (fresh (y rest)
+      (== `(,y . ,rest) ls)
+      (conde
+        ((== x y))
+        ((=/= x y)
+         (membo x rest))))))
 
 ;; end set constraints
 
