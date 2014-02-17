@@ -25,26 +25,26 @@ Set constructors:
 
 * empty-set (constant representing the empty set)
 
-(run* (q) (== empty-set empty-set))
+(run* (q) (set= empty-set empty-set))
 =>
 (_.0)
 
 * make-set (construct a finite set of arbitrary (non-set) elements)
 
-(run* (q) (== (make-set 5 6) (make-set 6 5)))
+(run* (q) (set= (make-set 5 6) (make-set 6 5)))
 =>
 (_.0)
 
 * ext-set (add elements to an existing set)
 
-(run* (q) (== (make-set 5) (ext-set empty-set 5)))
+(run* (q) (set= (make-set 5) (ext-set empty-set 5)))
 =>
 (_.0)
 
 
 miniKanren operators:
 
-* == (unification, extended to sets)
+* set= (set unification, distinct from ==)
 
 * elem (states that the first argument is an element of the second argument, which must be a set)
 
@@ -63,14 +63,10 @@ miniKanren operators:
 
 Current limitations:
 
-* A set can only be unified with another set:
-
-Legal: (fresh (x) (== (make-set 3 4) (make-set x 3)))
-
-Not legal: (fresh (A B x) (== (make-set 3 4) A) (== (make-set x 3) B) (== A B))
-
 * Sets cannot contain subsets.
 
 * Sets must be length instantiated.
 
 * Not using optimizations from the Stolzenburg papers that should cut down the number of answers generated.
+
+* The second argument to elem and not-elem cannot be a variable.

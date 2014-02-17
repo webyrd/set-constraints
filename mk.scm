@@ -1,25 +1,5 @@
 ;; anti-unification algorithm is needed for membership/set constraints
 (load "au.scm")
-
-(define set-tag 'set-tag)
-(define empty-set `(,set-tag))
-(define make-set
-  (lambda args
-    (unless (list? args)
-      (error 'make-s "provided arguments do not form a length-instantiated proper lists"))
-    `(,set-tag . ,args)))
-(define ext-set
-  (lambda (old-s . args)
-    (unless (set? old-s)
-      (error 'ext-s "first argument must be a set"))
-    (unless (list? old-s)
-      (error 'ext-s "provided set is not a length-instantiated proper lists"))
-    (let ((ls (cdr old-s)))
-      `(,set-tag ,@ls . ,args))))
-(define set? (lambda (x) (and (pair? x) (eq? (car x) set-tag))))
-
-
-
 (define sort list-sort)
 
 (define empty-c '(() () () () () ()))
@@ -98,6 +78,8 @@
     (let ((u (walk u S))
           (v (walk v S)))
       (cond
+        ((or (set? u) (set? v))
+         (error 'unify "attempt to unify sets using == rather than set="))
         ((and (pair? u) (pair? v))
          (let ((S (unify (car u) (car v) S)))
            (and S
@@ -665,23 +647,13 @@
 (define ==
   (lambda (u v)
     (lambdag@ (c : S D Y N T SC)
-      (let ((u (walk u S))
-            (v (walk v S)))
-        (cond
-          ((or (set? u) (set? v))
-           (unless (and (set? u) (set? v))
-             (error 'unify "attempt to unify a set and a non-set"))           
-           (let ((s1 (cdr u))
-                 (s2 (cdr v)))
-             (unless (and (list? s1) (list? s2))
-               (error 'unify "sets must be length-instantiated proper lists"))
-             ((unify-setso s1 s2) c)))
-          ((unify u v S) =>
-           (lambda (S0)
-             (cond
-               ((==fail-check c) (mzero))
-               (else (unit `(,S0 ,D ,Y ,N ,T ,SC))))))
-          (else (mzero)))))))
+      (cond         
+        ((unify u v S) =>
+         (lambda (S0)
+           (cond
+             ((==fail-check c) (mzero))
+             (else (unit `(,S0 ,D ,Y ,N ,T ,SC))))))
+        (else (mzero))))))
 
 (define elem
   (lambda (u v)
@@ -757,6 +729,73 @@
 
 
 ;; *** begin set constraints ***
+
+(define set-tag 'set-tag)
+(define empty-set `(,set-tag))
+(define make-set
+  (lambda args
+    (unless (list? args)
+      (error 'make-s "provided arguments do not form a length-instantiated proper lists"))
+    `(,set-tag . ,args)))
+(define ext-set
+  (lambda (old-s . args)
+    (unless (set? old-s)
+      (error 'ext-s "first argument must be a set"))
+    (unless (list? old-s)
+      (error 'ext-s "provided set is not a length-instantiated proper lists"))
+    (let ((ls (cdr old-s)))
+      `(,set-tag ,@ls . ,args))))
+(define set? (lambda (x) (and (pair? x) (eq? (car x) set-tag))))
+(define set=
+  (lambda (u v)
+    (lambdag@ (c : S D Y N T SC)
+      (let ((u (walk u S))
+            (v (walk v S)))
+        (cond
+          ((and (set? u) (set? v))
+           (let ((s1 (cdr u))
+                 (s2 (cdr v)))
+             (unless (and (list? s1) (list? s2))
+               (error 'unify "sets must be length-instantiated proper lists"))
+             ((unify-setso s1 s2) c)))
+          ((and (set? u) (var? v))
+           (cond
+             ((ext-S v u S) =>
+              (lambda (S0)
+                (cond
+                  ((==fail-check c) (mzero))
+                  (else (unit `(,S0 ,D ,Y ,N ,T ,SC))))))))
+          ((and (set? v) (var? u))
+           (cond
+             ((ext-S u v S) =>
+              (lambda (S0)
+                (cond
+                  ((==fail-check c) (mzero))
+                  (else (unit `(,S0 ,D ,Y ,N ,T ,SC))))))))
+          ((and (var? u) (var? v))
+           (cond
+             ((ext-S v u S) =>
+              (lambda (S0)
+                (cond
+                  ((==fail-check c) (mzero))
+                  (else (unit `(,S0 ,D ,Y ,N ,T ,SC))))))))
+          (else (mzero)))))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ;; membership constraint
 ;;
