@@ -167,6 +167,54 @@
   (run* (q) (elem q (make-set 5 6)))
   '(5 6))
 
+(test "elem-1"
+  (run* (q) (elem q empty-set))
+  '())
+
+(test "elem-2"
+  (run* (q) (elem q (ext-set empty-set 5 6)))
+  '(5 6))
+
+(test "elem-3"
+  (run* (q)
+    (elem q (make-set 5))
+    (elem q (make-set 6))
+    nevero)
+  '())
+
+(test "elem-4"
+  (run* (q)
+    (elem q (make-set 5 6))
+    (elem q (make-set 7 8))
+    nevero)
+  '())
+
+(test "elem-5"
+  (run* (q)
+    (elem q (make-set 5 6))
+    (elem q (make-set 6 7)))
+  '(6))
+
+(test "elem-6"
+  (run* (q)
+    (elem q (make-set 5 6))
+    (elem q (make-set 6 7))
+    (=/= 6 q))
+  '())
+
+(test "elem-7"
+  (run* (q)
+    (elem q (make-set 5 6))
+    (not-elem q (make-set 5 6)))
+  '())
+
+(test "elem-7"
+  (run* (q)
+    (not-elem q (make-set 5 6))
+    (elem q (make-set 5 6)))
+  '())
+
+
 (test "not-elem-0"
   (run* (q) (not-elem q (make-set 5 6)))
   '((_.0 (=/= ((_.0 5)) ((_.0 6))))))
