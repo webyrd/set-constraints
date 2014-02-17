@@ -19,7 +19,7 @@ vol. 22, no. 1, pp. 45-63
 
 
 
-Current minimal miniKanren interface:
+Current minimal miniKanren interface (see `mk-set-tests.scm` for more elaborate examples):
 
 Set constructors:
 
