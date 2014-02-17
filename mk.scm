@@ -656,9 +656,11 @@
         (cond
           ((or (set? u) (set? v))
            (unless (and (set? u) (set? v))
-             (error 'unify "attempt to unify a set and a non-set"))
+             (error 'unify "attempt to unify a set and a non-set"))           
            (let ((s1 (cdr u))
                  (s2 (cdr v)))
+             (unless (and (list? s1) (list? s2))
+               (error 'unify "sets must be length-instantiated proper lists"))
              ((unify-setso s1 s2) c)))
           ((unify u v S) =>
            (lambda (S0)
