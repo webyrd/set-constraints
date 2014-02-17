@@ -22,6 +22,10 @@
   (run* (q) (== (make-set 5) empty-set))
   '())
 
+(test "==-sets-empty-4"
+  (run* (q) (== (make-set 5) (ext-set empty-set 5)))
+  '(_.0))
+
 
 (test "==-sets-0"
   (run* (q) (== (make-set 5 6) (make-set 5 5 6)))
