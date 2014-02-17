@@ -25,18 +25,40 @@ Set constructors:
 
 * empty-set (constant representing the empty set)
 
+(run* (q) (== empty-set empty-set))
+=>
+(_.0)
+
 * make-set (construct a finite set of arbitrary (non-set) elements)
 
-* ext-set
+(run* (q) (== (make-set 5 6) (make-set 6 5)))
+=>
+(_.0)
+
+* ext-set (add elements to an existing set)
+
+(run* (q) (== (make-set 5) (ext-set empty-set 5)))
+=>
+(_.0)
 
 
 miniKanren operators:
 
 * == (unification, extended to sets)
 
-* elem
+* elem (states that the first argument is an element of the second argument, which must be a set)
 
-* not-elem
+(run* (q) (elem q (make-set 5 6)))
+=>
+(5 6)
+
+* not-elem (states that the first argument is not an element of the second argument, which must be a set)
+
+(run* (q)
+  (elem q (make-set 5 6))
+  (not-elem q (make-set 5 6)))
+=>
+()
 
 
 Current limitations:
