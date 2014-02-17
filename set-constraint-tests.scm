@@ -78,6 +78,10 @@
     ((_.0 6 5) (=/= ((_.0 5)) ((_.0 6))))))
 
 
+(test "unify-setso-0"
+  (run* (q) (unify-setso '(5 6) '(5 5 6)))
+  '(_.0))
+
 (test "unify-setso-1"
   (run* (q) (unify-setso '(5 6) '(5 6)))
   '(_.0))
