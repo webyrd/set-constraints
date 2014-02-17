@@ -147,6 +147,17 @@
   9)
 
 
+(test "elem-0"
+  (run* (q) (elem q `(,set-tag 5 6)))
+  '(5 6))
+
+(test "not-elem-0"
+  (run* (q) (not-elem q `(,set-tag 5 6)))
+  '((_.0 (=/= ((_.0 5)) ((_.0 6))))))
+
+
+
+
 
 
 

@@ -669,6 +669,28 @@
                (else (unit `(,S0 ,D ,Y ,N ,T ,SC))))))
           (else (mzero)))))))
 
+(define elem
+  (lambda (u v)
+    (lambdag@ (c : S D Y N T SC)    
+      (let ((x (walk u S))
+            (s (walk v S)))
+        (unless (set? s)
+          (error 'elem "attempt to apply elem on a non-set"))
+        (unless (list? s)
+          (error 'elem "sets must be length-instantiated proper lists"))
+        ((membo x (cdr s)) c)))))
+
+(define not-elem
+  (lambda (u v)
+    (lambdag@ (c : S D Y N T SC)    
+      (let ((x (walk u S))
+            (s (walk v S)))
+        (unless (set? s)
+          (error 'not-elem "attempt to apply not-elem on a non-set"))
+        (unless (list? s)
+          (error 'not-elem "sets must be length-instantiated proper lists"))
+        ((not-membo x (cdr s)) c)))))
+
 (define succeed (== #f #f))
 
 (define fail (== #f #t))
@@ -811,7 +833,6 @@
                   (loop (cdr SC) c)))
                (else (mzero))))))))))
 
-
 ;; Algorithm B, from page 6 of Stolzenburg's 'Membership-Constraints
 ;; and Complexity in Logic Programming with Sets'
 (define membo
@@ -822,6 +843,15 @@
         ((== x y))
         ((=/= x y)
          (membo x rest))))))
+
+(define not-membo
+  (lambda (x ls)
+    (conde
+      ((== '() ls))
+      ((fresh (y rest)
+         (== `(,y . ,rest) ls)
+         (=/= x y)
+         (not-membo x rest))))))
 
 
 ;; Algorithm C, from page 6 of Stolzenburg's 'Membership-Constraints
