@@ -12,21 +12,21 @@
 
 
 (test "==-sets-0"
-  (run* (q) (== `(,set-tag 5 6) `(,set-tag 5 5 6)))
+  (run* (q) (== (make-set 5 6) (make-set 5 5 6)))
   '(_.0))
 
 (test "==-sets-1"
-  (run* (q) (== `(,set-tag 5 6) `(,set-tag 5 6)))
+  (run* (q) (== (make-set 5 6) (make-set 5 6)))
   '(_.0))
 
 (test "==-sets-2"
-  (run* (q) (== `(,set-tag 5 6) `(,set-tag 6 5)))
+  (run* (q) (== (make-set 5 6) (make-set 6 5)))
   '(_.0))
 
 (test "==-sets-3"
   (run* (q)
     (fresh (x y)
-      (== `(,set-tag 5 6) `(,set-tag ,x ,y))
+      (== (make-set 5 6) (make-set x y))
       (== `(,x ,y) q)))
   '((5 6)
     (6 5)))
@@ -34,7 +34,7 @@
 (test "==-sets-4"
   (run* (q)
     (fresh (A B u v x y)
-      (== `(,set-tag ,u ,v) `(,set-tag ,x ,y))
+      (== (make-set u v) (make-set x y))
       (== `((,u ,v) (,x ,y)) q)))
   '(((_.0 _.0) (_.0 _.0))
     (((_.0 _.1) (_.1 _.0)) (=/= ((_.0 _.1))))
@@ -45,7 +45,7 @@
 ;; Complexity in Logic Programming with Sets'
   (run* (q)
     (fresh (B w x y z)
-      (== `(,set-tag ,w ,x ,y ,z) `(,set-tag a b))
+      (== (make-set w x y z) (make-set 'a 'b))
       (== `(,w ,x ,y ,z) q)))
   '((b a a a)
     (a b a a)
@@ -68,7 +68,7 @@
   (length
    (run* (q)
      (fresh (w x y z)
-       (== `(,set-tag ,w ,x ,y ,z) `(,set-tag a b)))))
+       (== (make-set w x y z) (make-set 'a 'b)))))
   14)
 
 (test "==-sets-experiment-2a"
@@ -78,7 +78,7 @@
 ;; Hmmm.  Doesn't seem to match the number of answers from the paper.
   (run* (q)
     (fresh (x y z)
-      (== `(,set-tag ,x ,y ,z) `(,set-tag ,x ,y ,z))
+      (== (make-set x y z) (make-set x y z))
       (== `((,x ,y ,z) (,x ,y ,z)) q)))
   '(((_.0 _.0 _.0) (_.0 _.0 _.0))
     (((_.0 _.1 _.0) (_.0 _.1 _.0)) (=/= ((_.0 _.1))))
@@ -92,7 +92,7 @@
   (length
    (run* (q)
      (fresh (x y z)
-       (== `(,set-tag ,x ,y ,z) `(,set-tag ,x ,y ,z))
+       (== (make-set x y z) (make-set x y z))
        (== `((,x ,y ,z) (,x ,y ,z)) q))))
   5)
 
@@ -101,8 +101,8 @@
   ;; Complexity in Logic Programming with Sets'
   (run* (q)
     (fresh (x y1 z1 y2 z2)
-      (== `(,set-tag ,x (f ,y1) (g ,y1) (g ,z1))
-          `(,set-tag ,x (f ,y2) (g ,y2) (g ,z2)))
+      (== (make-set x `(f ,y1) `(g ,y1) `(g ,z1))
+          (make-set x `(f ,y2) `(g ,y2) `(g ,z2)))
       (== `((,x (f ,y1) (g ,y1) (g ,z1))
             (,x (f ,y2) (g ,y2) (g ,z2)))
           q)))
@@ -139,8 +139,8 @@
   (length
    (run* (q)
      (fresh (x y1 z1 y2 z2)
-       (== `(,set-tag ,x (f ,y1) (g ,y1) (g ,z1))
-           `(,set-tag ,x (f ,y2) (g ,y2) (g ,z2)))
+       (== (make-set x `(f ,y1) `(g ,y1) `(g ,z1))
+           (make-set x `(f ,y2) `(g ,y2) `(g ,z2)))
        (== `((,x (f ,y1) (g ,y1) (g ,z1))
              (,x (f ,y2) (g ,y2) (g ,z2)))
            q))))
@@ -148,11 +148,11 @@
 
 
 (test "elem-0"
-  (run* (q) (elem q `(,set-tag 5 6)))
+  (run* (q) (elem q (make-set 5 6)))
   '(5 6))
 
 (test "not-elem-0"
-  (run* (q) (not-elem q `(,set-tag 5 6)))
+  (run* (q) (not-elem q (make-set 5 6)))
   '((_.0 (=/= ((_.0 5)) ((_.0 6))))))
 
 

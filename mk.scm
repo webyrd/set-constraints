@@ -2,6 +2,8 @@
 (load "au.scm")
 
 (define set-tag 'set-tag)
+(define empty-set `(,set-tag))
+(define make-set (lambda args `(,set-tag . ,args)))
 (define set? (lambda (x) (and (pair? x) (eq? (car x) set-tag))))
 
 
