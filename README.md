@@ -47,5 +47,8 @@ Legal: (fresh (x) (== (make-set 3 4) (make-set x 3)))
 
 Not legal: (fresh (A B x) (== (make-set 3 4) A) (== (make-set x 3) B) (== A B))
 
-
 * Sets cannot contain subsets.
+
+* Sets must be length instantiated.
+
+* Not using optimizations from the Stolzenburg papers which should cut on the number of answers generated.
