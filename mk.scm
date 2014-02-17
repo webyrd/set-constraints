@@ -1,6 +1,11 @@
 ;; anti-unification algorithm is needed for membership/set constraints
 (load "au.scm")
 
+(define set-tag 'set-tag)
+(define set? (lambda (x) (and (pair? x) (eq? (car x) set-tag))))
+
+
+
 (define sort list-sort)
 
 (define empty-c '(() () () () () ()))
@@ -646,13 +651,21 @@
 (define ==
   (lambda (u v)
     (lambdag@ (c : S D Y N T SC)
-      (cond
-        ((unify u v S) =>
-         (lambda (S0)
-           (cond
-             ((==fail-check c) (mzero))
-             (else (unit `(,S0 ,D ,Y ,N ,T ,SC))))))
-        (else (mzero))))))
+      (let ((u (walk u S))
+            (v (walk v S)))
+        (cond
+          ((or (set? u) (set? v))
+           (unless (and (set? u) (set? v))
+             (error 'unify "attempt to unify a set and a non-set"))
+           (let ((s1 (cdr u))
+                 (s2 (cdr v)))
+             ((unify-setso s1 s2) c)))
+          ((unify u v S) =>
+           (lambda (S0)
+             (cond
+               ((==fail-check c) (mzero))
+               (else (unit `(,S0 ,D ,Y ,N ,T ,SC))))))
+          (else (mzero)))))))
 
 (define succeed (== #f #f))
 

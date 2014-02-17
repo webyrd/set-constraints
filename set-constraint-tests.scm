@@ -11,6 +11,145 @@
 (define alwayso (anyo succeed))
 
 
+(test "==-sets-0"
+  (run* (q) (== `(,set-tag 5 6) `(,set-tag 5 5 6)))
+  '(_.0))
+
+(test "==-sets-1"
+  (run* (q) (== `(,set-tag 5 6) `(,set-tag 5 6)))
+  '(_.0))
+
+(test "==-sets-2"
+  (run* (q) (== `(,set-tag 5 6) `(,set-tag 6 5)))
+  '(_.0))
+
+(test "==-sets-3"
+  (run* (q)
+    (fresh (x y)
+      (== `(,set-tag 5 6) `(,set-tag ,x ,y))
+      (== `(,x ,y) q)))
+  '((5 6)
+    (6 5)))
+
+(test "==-sets-4"
+  (run* (q)
+    (fresh (A B u v x y)
+      (== `(,set-tag ,u ,v) `(,set-tag ,x ,y))
+      (== `((,u ,v) (,x ,y)) q)))
+  '(((_.0 _.0) (_.0 _.0))
+    (((_.0 _.1) (_.1 _.0)) (=/= ((_.0 _.1))))
+    (((_.0 _.1) (_.0 _.1)) (=/= ((_.0 _.1))))))
+
+(test "==-sets-experiment-1a"
+;; experiment 1 on p. 10 of Stolzenburg's 'Membership-Constraints and
+;; Complexity in Logic Programming with Sets'
+  (run* (q)
+    (fresh (B w x y z)
+      (== `(,set-tag ,w ,x ,y ,z) `(,set-tag a b))
+      (== `(,w ,x ,y ,z) q)))
+  '((b a a a)
+    (a b a a)
+    (b b a a)
+    (a a b a)
+    (b a b a)
+    (a a a b)
+    (a b b a)
+    (b a a b)
+    (b b b a)
+    (a b a b)
+    (a a b b)
+    (b b a b)
+    (b a b b)
+    (a b b b)))
+
+(test "==-sets-experiment-1b"
+;; experiment 1 on p. 10 of Stolzenburg's 'Membership-Constraints and
+;; Complexity in Logic Programming with Sets'  
+  (length
+   (run* (q)
+     (fresh (w x y z)
+       (== `(,set-tag ,w ,x ,y ,z) `(,set-tag a b)))))
+  14)
+
+(test "==-sets-experiment-2a"
+;; experiment 2 on p. 10 of Stolzenburg's 'Membership-Constraints and
+;; Complexity in Logic Programming with Sets'
+;;
+;; Hmmm.  Doesn't seem to match the number of answers from the paper.
+  (run* (q)
+    (fresh (x y z)
+      (== `(,set-tag ,x ,y ,z) `(,set-tag ,x ,y ,z))
+      (== `((,x ,y ,z) (,x ,y ,z)) q)))
+  '(((_.0 _.0 _.0) (_.0 _.0 _.0))
+    (((_.0 _.1 _.0) (_.0 _.1 _.0)) (=/= ((_.0 _.1))))
+    (((_.0 _.1 _.1) (_.0 _.1 _.1)) (=/= ((_.0 _.1))))
+    (((_.0 _.0 _.1) (_.0 _.0 _.1)) (=/= ((_.0 _.1))))
+    (((_.0 _.1 _.2) (_.0 _.1 _.2)) (=/= ((_.0 _.1)) ((_.0 _.2)) ((_.1 _.2))))))
+
+(test "==-sets-experiment-2b"
+  ;; experiment 2 on p. 10 of Stolzenburg's 'Membership-Constraints and
+  ;; Complexity in Logic Programming with Sets'
+  (length
+   (run* (q)
+     (fresh (x y z)
+       (== `(,set-tag ,x ,y ,z) `(,set-tag ,x ,y ,z))
+       (== `((,x ,y ,z) (,x ,y ,z)) q))))
+  5)
+
+(test "==-sets-experiment-3a"
+  ;; experiment 3 on p. 10 of Stolzenburg's 'Membership-Constraints and
+  ;; Complexity in Logic Programming with Sets'
+  (run* (q)
+    (fresh (x y1 z1 y2 z2)
+      (== `(,set-tag ,x (f ,y1) (g ,y1) (g ,z1))
+          `(,set-tag ,x (f ,y2) (g ,y2) (g ,z2)))
+      (== `((,x (f ,y1) (g ,y1) (g ,z1))
+            (,x (f ,y2) (g ,y2) (g ,z2)))
+          q)))
+  '((((g _.0) (f _.0) (g _.0) (g _.0))
+     ((g _.0) (f _.0) (g _.0) (g _.0)))
+    (((f _.0) (f _.0) (g _.0) (g _.0))
+     ((f _.0) (f _.0) (g _.0) (g _.0)))
+    ((((g _.0) (f _.1) (g _.1) (g _.0))
+      ((g _.0) (f _.1) (g _.1) (g _.0)))
+     (=/= ((_.0 _.1))))
+    ((((g _.0) (f _.1) (g _.1) (g _.0))
+      ((g _.0) (f _.1) (g _.1) (g _.1)))
+     (=/= ((_.0 _.1))))
+    ((((f _.0) (f _.0) (g _.0) (g _.1))
+      ((f _.0) (f _.0) (g _.0) (g _.1)))
+     (=/= ((_.0 _.1))))
+    ((((g _.0) (f _.0) (g _.0) (g _.1))
+      ((g _.0) (f _.0) (g _.0) (g _.1)))
+     (=/= ((_.0 _.1))))
+    ((((g _.0) (f _.1) (g _.1) (g _.1))
+      ((g _.0) (f _.1) (g _.1) (g _.0)))
+     (=/= ((_.0 _.1))))
+    (((_.0 (f _.1) (g _.1) (g _.1))
+      (_.0 (f _.1) (g _.1) (g _.1)))
+     (=/= ((_.0 (f _.1))) ((_.0 (g _.1)))))
+    (((_.0 (f _.1) (g _.1) (g _.2))
+      (_.0 (f _.1) (g _.1) (g _.2)))
+     (=/= ((_.0 (f _.1))) ((_.0 (g _.1))) ((_.0 (g _.2)))
+          ((_.1 _.2))))))
+
+(test "==-sets-experiment-3b"
+  ;; experiment 3 on p. 10 of Stolzenburg's 'Membership-Constraints and
+  ;; Complexity in Logic Programming with Sets'
+  (length
+   (run* (q)
+     (fresh (x y1 z1 y2 z2)
+       (== `(,set-tag ,x (f ,y1) (g ,y1) (g ,z1))
+           `(,set-tag ,x (f ,y2) (g ,y2) (g ,z2)))
+       (== `((,x (f ,y1) (g ,y1) (g ,z1))
+             (,x (f ,y2) (g ,y2) (g ,z2)))
+           q))))
+  9)
+
+
+
+
+
 (test "membo-1"
   (run* (q) (membo 'x '(x)))
   '(_.0))
