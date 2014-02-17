@@ -10,6 +10,18 @@
 (define nevero (anyo fail))
 (define alwayso (anyo succeed))
 
+(test "==-sets-empty-1"
+  (run* (q) (== empty-set empty-set))
+  '(_.0))
+
+(test "==-sets-empty-2"
+  (run* (q) (== empty-set (make-set 5)))
+  '())
+
+(test "==-sets-empty-3"
+  (run* (q) (== (make-set 5) empty-set))
+  '())
+
 
 (test "==-sets-0"
   (run* (q) (== (make-set 5 6) (make-set 5 5 6)))

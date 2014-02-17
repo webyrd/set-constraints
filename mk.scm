@@ -3,7 +3,19 @@
 
 (define set-tag 'set-tag)
 (define empty-set `(,set-tag))
-(define make-set (lambda args `(,set-tag . ,args)))
+(define make-set
+  (lambda args
+    (unless (list? args)
+      (error 'make-s "provided arguments do not form a length-instantiated proper lists"))
+    `(,set-tag . ,args)))
+(define ext-set
+  (lambda (old-s . args)
+    (unless (set? old-s)
+      (error 'ext-s "first argument must be a set"))
+    (unless (list? old-s)
+      (error 'ext-s "provided set is not a length-instantiated proper lists"))
+    (let ((ls (cdr old-s)))
+      `(,set-tag ,@ls . ,args))))
 (define set? (lambda (x) (and (pair? x) (eq? (car x) set-tag))))
 
 
