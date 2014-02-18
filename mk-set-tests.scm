@@ -629,6 +629,41 @@
     (+ - + 0 -)))
 
 
+(define ai+-plus-zero
+  (lambda (s1 s2 in-set out-set)
+    (conde
+      ((elem '+ s1)
+       (conde
+         ((elem 0 s2)
+          (set= (ext-set in-set '+) out-set))
+         ((not-elem 0 s2)
+          (set= in-set out-set))))
+      ((not-elem '+ s1)
+       (set= in-set out-set)))))
+
+(test "ai+-plus-zero-1"
+  (run* (q) (ai+-plus-zero (make-set '+) (make-set 0) empty-set q))
+  '((set-tag +)))
+
+(test "ai+-plus-zero-2"
+  (run* (q) (ai+-plus-zero (make-set '+) (make-set 0) empty-set (make-set '+)))
+  '(_.0))
+
+(test "ai+-plus-zero-3"
+  (run* (q) (ai+-plus-zero (make-set q) (make-set 0) empty-set (make-set '+)))
+  '(+))
+
+(test "ai+-plus-zero-4"
+  (run* (q)
+    (fresh (x y z)
+      (ai+-plus-zero (make-set x) (make-set y) empty-set (make-set z))
+      (== `(,x ,y ,z) q)))
+  '((+ 0 +)))
+
+(test "ai+-plus-zero-5"
+  (run* (q) (ai+-plus-zero (make-set '+) (make-set '+) empty-set q))
+  `(,empty-set))
+
 
 ;;; combine multiple a+ relations
 
