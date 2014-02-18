@@ -295,6 +295,18 @@
       (== x y)))
   '(_.0))
 
+;; TODO
+;;
+;; This test currently is erroneous, since the second arg to elem must
+;; be a set, not a fresh variable.  Should probably fix this.  Or, at
+;; least should work if the second argument is a set with a non-empty
+;; tail.
+;;
+#;(test "elem-12"
+  (run 5 (q)
+    (elem 5 q))
+  '???)
+
 
 (test "not-elem-0"
   (run* (q) (not-elem q (make-set 5 6)))
@@ -302,7 +314,29 @@
 
 
 
-;; find all free variables in a lambda-calculus expression
+;; Find all free variables in a lambda-calculus expression
+;;
+;; 'project' is necessary, since ext-set is just a Scheme constructor,
+;; and doesn't know which values are associated with a logic variable.
+;; Probably ext-set should be a relation, not a Scheme constructor.
+;;
+;;
+;; moded:
+;;
+;; (exp bound-vars+ free-in+ free-out)
+;;
+;; both bound-vars and free-in cannot be fresh variables--they must be bound to sets
+;;
+;; this is because elem and not-elem expect their second args to be sets, not vars,
+;; and also because ext-set requires its first element to be a set, not a var.
+;;
+;; maybe I can get around this by delaying elem and not-elem when
+;; their arguments aren't sufficiently ground, and by reifying these
+;; constraints if they never become sufficiently ground.  And maybe I
+;; can use a more general 'extend-set' constraint, rather than
+;; 'ext-set'.  Extending set unification to handle tails doesn't seem
+;; sufficient, since set unification isn't the problem.  But should be
+;; easy to extend ext-set to handle sets with tails.
 (define all-freeo
   (lambda (exp bound-vars free-in free-out)
     (matche exp
@@ -403,3 +437,78 @@
     (((lambda (_.0) (_.1 _.2)) => _.2 _.1) (=/= ((_.0 _.1)) ((_.0 _.2)) ((_.1 _.2))) (sym _.1 _.2))
     (((lambda (_.0) (_.1 _.2)) => _.1 _.2) (=/= ((_.0 _.1)) ((_.0 _.2)) ((_.1 _.2))) (sym _.1 _.2))
     (((_.0 (_.1 _.0)) => _.0 _.1) (=/= ((_.0 _.1))) (sym _.0 _.1))))
+
+#!eof
+
+;; From p. 27 of Pierce's 'Types and Programming Languages'
+;; Using Peano numerals: z, (s z), (s (s z)), etc
+;;
+;; Tricky, since Pierce uses set-builder notation to construct a new
+;; set using elements of another set.
+;;
+;; I think I can implement this if I make a remove-element constraint
+;; that takes an element and two sets, where the second set is the
+;; first set with all occurrences of the first element removed.
+;; I suppose I can do this with disequality constraints.
+;;
+;; Assuming I have a remove-element constraint, I could write a
+;; recursive helper that removes elements from the set until it is
+;; empty.  For each removed element that isn't in Si, the helper would
+;; add that element to Si.
+(define termso
+  (lambda (i Si)
+    (conde
+      ((== 'z i)
+       (set= empty-set Si))
+      ((== '(s z) i)
+       (fresh (S0)
+         (termso 'z S0)
+         (set= (ext-set S0 'true 'false) Si)))
+      ((fresh (i-2)
+         (== `(s (s ,i-2)) i)
+         (fresh (Si-1)
+           (termso `(s ,i-2) Si-1)
+           (terms-add-singletonso Si-1 Si-1 Si)))))))
+
+;; adding 'if' seems trickier...
+(define terms-add-singletonso
+  (lambda (Si-1 S-acc Si)
+    (conde
+      ((set= empty-set Si-1)
+       (set= S-acc Si))
+      ((fresh (t Si-1^ S-acc^)
+         (remove-element t Si-1 Si-1^)
+         (set= (ext-set
+                 S-acc
+                 `(succ ,t)
+                 `(pred ,t)
+                 `(iszero ,t))
+               S-acc^)
+         (terms-add-singletonso Si-1^ S-acc^ Si))))))
+
+
+;; Can implement 'remove-element' directly as a miniKanren relation,
+;; provided set unification supports sets with tails.
+(define remove-element
+  (lambda (e s-in s-out)
+    (conde
+      ((set= empty-set s-in)
+       (set= empty-set s-out))
+      ((fresh (a d)
+         (set= `(,set-tag ,a . ,d) s-in)
+         (conde
+           ((== e a)
+            (remove-elemento e `(,set-tag . ,d) s-out))
+           ((=/= e a)
+            (fresh (res)
+              (remove-elemento e d res)
+              (set= `(set-tag ,a . ,res) s-out)))))))))
+
+;; Can implement extend-set as a miniKanren relation, provided set
+;; unification supports sets with tails.  Seems more general than, but
+;; less efficient, than the ext-set Scheme constructor.
+(define extend-set
+  (lambda (e s-in s-out)
+    (fresh (d)
+      (set= `(,set-tag . ,d) s-in)
+      (set= `(,set-tag ,e . ,d) s-out))))
