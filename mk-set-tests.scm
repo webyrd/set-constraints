@@ -440,6 +440,219 @@
 
 
 
+;; abstract interpretation of signs, from:
+;;
+;; http://matt.might.net/articles/intro-static-analysis/
+;;
+;; two negative numbers, added together, results in another negative number.
+(define ai+-minus-minus
+  (lambda (s1 s2 in-set out-set)
+    (conde
+      ((elem '- s1)
+       (conde
+         ((elem '- s2)
+          (set= (ext-set in-set '-) out-set))
+         ((not-elem '- s2)
+          (set= in-set out-set))))
+      ((not-elem '- s1)
+       (set= in-set out-set)))))
+
+(test "ai+-minus-minus-1"
+  (run* (q) (ai+-minus-minus (make-set '-) (make-set '-) empty-set q))
+  '((set-tag -)))
+
+(test "ai+-minus-minus-2"
+  (run* (q) (ai+-minus-minus (make-set '-) (make-set '-) empty-set (make-set '-)))
+  '(_.0))
+
+(test "ai+-minus-minus-3"
+  (run* (q) (ai+-minus-minus (make-set q) (make-set '-) empty-set (make-set '-)))
+  '(-))
+
+(test "ai+-minus-minus-4"
+  (run* (q)
+    (fresh (x y z)
+      (ai+-minus-minus (make-set x) (make-set y) empty-set (make-set z))
+      (== `(,x ,y ,z) q)))
+  '((- - -)))
+
+(define ai+-minus-plus
+  (lambda (s1 s2 in-set out-set)
+    (conde
+      ((elem '- s1)
+       (conde
+         ((elem '+ s2)
+          (set= (ext-set in-set '- 0 '+) out-set))
+         ((not-elem '+ s2)
+          (set= in-set out-set))))
+      ((not-elem '- s1)
+       (set= in-set out-set)))))
+
+(test "ai+-minus-plus-1"
+  (run* (q) (ai+-minus-plus (make-set '-) (make-set '+) empty-set q))
+  '((set-tag - 0 +)))
+
+(test "ai+-minus-plus-2a"
+  (run* (q) (ai+-minus-plus (make-set '-) (make-set '+) empty-set (make-set '- 0 '+)))
+  '(_.0))
+
+(test "ai+-minus-plus-2b"
+  (run* (q) (ai+-minus-plus (make-set '-) (make-set '+) empty-set (make-set 0 '- '+)))
+  '(_.0))
+
+(test "ai+-minus-plus-2c"
+  (run* (q) (ai+-minus-plus (make-set '-) (make-set '+) empty-set (make-set '+ 0 '- '+ 0)))
+  '(_.0))
+
+(test "ai+-minus-plus-3"
+  (run* (q) (ai+-minus-plus (make-set q) (make-set '+) empty-set (make-set '- 0 '+)))
+  '(-))
+
+(test "ai+-minus-plus-4"
+  (run* (q)
+    (fresh (a b)
+      (ai+-minus-plus (make-set a) (make-set b) empty-set (make-set '- 0 '+))
+      (== `(,a ,b) q)))
+  '((- +)))
+
+(test "ai+-minus-plus-5"
+  (run* (q)
+    (fresh (a b x y z)
+      (ai+-minus-plus (make-set a) (make-set b) empty-set (make-set x y z))
+      (== `(,a ,b ,x ,y ,z) q)))
+  '((- + - 0 +)
+    (- + - + 0)
+    (- + 0 + -)
+    (- + 0 - +)
+    (- + + - 0)
+    (- + + 0 -)))
+
+
+(define ai+-plus-minus
+  (lambda (s1 s2 in-set out-set)
+    (conde
+      ((elem '+ s1)
+       (conde
+         ((elem '- s2)
+          (set= (ext-set in-set '- 0 '+) out-set))
+         ((not-elem '- s2)
+          (set= in-set out-set))))
+      ((not-elem '+ s1)
+       (set= in-set out-set)))))
+
+(test "ai+-plus-minus-1"
+  (run* (q) (ai+-plus-minus (make-set '+) (make-set '-) empty-set q))
+  '((set-tag - 0 +)))
+
+(test "ai+-plus-minus-2a"
+  (run* (q) (ai+-plus-minus (make-set '+) (make-set '-) empty-set (make-set '- 0 '+)))
+  '(_.0))
+
+(test "ai+-plus-minus-2b"
+  (run* (q) (ai+-plus-minus (make-set '+) (make-set '-) empty-set (make-set 0 '- '+)))
+  '(_.0))
+
+(test "ai+-plus-minus-2c"
+  (run* (q) (ai+-plus-minus (make-set '+) (make-set '-) empty-set (make-set '+ 0 '- '+ 0)))
+  '(_.0))
+
+(test "ai+-plus-minus-3"
+  (run* (q) (ai+-plus-minus (make-set q) (make-set '-) empty-set (make-set '- 0 '+)))
+  '(+))
+
+(test "ai+-plus-minus-4"
+  (run* (q)
+    (fresh (a b)
+      (ai+-plus-minus (make-set a) (make-set b) empty-set (make-set '- 0 '+))
+      (== `(,a ,b) q)))
+  '((+ -)))
+
+(test "ai+-plus-minus-5"
+  (run* (q)
+    (fresh (a b x y z)
+      (ai+-plus-minus (make-set a) (make-set b) empty-set (make-set x y z))
+      (== `(,a ,b ,x ,y ,z) q)))
+  '((+ - - 0 +)
+    (+ - - + 0)
+    (+ - 0 + -)
+    (+ - 0 - +)
+    (+ - + - 0)
+    (+ - + 0 -)))
+
+
+
+;;; combine multiple a+ relations
+
+(test "ai+-minus/plus-and-plus/minus-1a"
+  (run* (q)
+    (fresh (A B C D)
+      (set= (make-set '- '+) A)
+      (set= (make-set '- '+) B)
+      (ai+-plus-minus A B empty-set C)
+      (ai+-minus-plus A B empty-set D)
+      (== `(,A ,B ,C ,D) q)))
+  '(((set-tag - +)
+     (set-tag - +)
+     (set-tag - 0 +)
+     (set-tag - 0 +))))
+
+(test "ai+-minus/plus-and-plus/minus-1b"
+  (run* (q)
+    (fresh (C D)
+      (ai+-plus-minus (make-set '- '+) (make-set '- '+) empty-set C)
+      (ai+-minus-plus (make-set '- '+) (make-set '- '+) empty-set D)
+      (== `(,C ,D) q)))
+  '(((set-tag - 0 +)
+     (set-tag - 0 +))))
+
+(test "ai+-minus/plus-and-plus/minus-2a"
+  (run* (q)
+    (fresh (A B x y z)
+      (set= (make-set '- '+) A)
+      (set= (make-set '- '+) B)
+      (ai+-plus-minus A B empty-set (make-set x y z))
+      (ai+-minus-plus A B empty-set (make-set x y z))
+      (== `(,A ,B ,x ,y ,z) q)))
+  '(((set-tag - +) (set-tag - +) - 0 +)
+    ((set-tag - +) (set-tag - +) - + 0)
+    ((set-tag - +) (set-tag - +) 0 + -)
+    ((set-tag - +) (set-tag - +) 0 - +)
+    ((set-tag - +) (set-tag - +) + - 0)
+    ((set-tag - +) (set-tag - +) + 0 -)))
+
+(test "ai+-minus/plus-and-plus/minus-2b"
+  (run* (q)
+    (fresh (A B C x y z)
+      (set= (make-set '- '+) A)
+      (set= (make-set '- '+) B)
+      (set= (make-set x y z) C)
+      (ai+-plus-minus A B empty-set C)
+      (ai+-minus-plus A B empty-set C)
+      (== `(,A ,B ,C) q)))
+  '(((set-tag - +) (set-tag - +) (set-tag - 0 +))
+    ((set-tag - +) (set-tag - +) (set-tag - + 0))
+    ((set-tag - +) (set-tag - +) (set-tag 0 + -))
+    ((set-tag - +) (set-tag - +) (set-tag 0 - +))
+    ((set-tag - +) (set-tag - +) (set-tag + - 0))
+    ((set-tag - +) (set-tag - +) (set-tag + 0 -))))
+
+(test "ai+-minus/plus-and-plus/minus-3"
+  (run* (q)
+    (fresh (A B C x y v w)
+      (set= (make-set x y) A)
+      (set= (make-set v w) B)
+      (set= (make-set '- 0 '+) C)
+      (ai+-plus-minus A B empty-set C)
+      (ai+-minus-plus A B empty-set C)
+      (== `(,A ,B ,C) q)))
+  '(((set-tag + -) (set-tag - +) (set-tag - 0 +))
+    ((set-tag - +) (set-tag - +) (set-tag - 0 +))
+    ((set-tag + -) (set-tag + -) (set-tag - 0 +))
+    ((set-tag - +) (set-tag + -) (set-tag - 0 +))))
+
+
+
+
 ;; Broken version of termso
 ;;
 ;; From p. 27 of Pierce's 'Types and Programming Languages'
