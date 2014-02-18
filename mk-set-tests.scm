@@ -496,6 +496,8 @@
 
 ;; Can implement 'remove-element' directly as a miniKanren relation,
 ;; provided set unification supports sets with tails.
+;;
+;; remove-elemento won't work correctly, without support for tails!!
 (define remove-elemento
   (lambda (e s-in s-out)
     (conde
@@ -505,11 +507,82 @@
          (set= `(,set-tag ,a . ,d) s-in)
          (conde
            ((== e a)
-            (remove-elemento e `(,set-tag . ,d) s-out))
-           ((=/= e a)
-            (fresh (res)
-              (remove-elemento e d res)
-              (set= `(set-tag ,a . ,res) s-out)))))))))
+            (remove-elemento e `(,set-tag . ,d) s-out))           
+          ((=/= e a)
+           (fresh (res)
+             (remove-elemento e `(,set-tag . ,d) `(,set-tag . ,res))
+             (set= `(set-tag ,a . ,res) s-out)))))))))
+
+;; won't work correctly, without support for tails!!
+#;(test "remove-elemento-0a"
+  (run 1 (q)
+    (fresh (e out)
+      (remove-elemento e empty-set out)
+      (== `(,e ,out) q)))
+  '((_.0 (set-tag))))
+
+;; won't work correctly, without support for tails!!
+#;(test "remove-elemento-0b"
+  (run* (q)
+    (fresh (e out)
+      (remove-elemento e empty-set out)
+      (== `(,e ,out) q)))
+  '((_.0 (set-tag))))
+
+;; won't work correctly, without support for tails!!
+#;(test "remove-elemento-1a"
+  (run 1 (q)
+    (fresh (e out)
+      (remove-elemento e (ext-set empty-set 'a) out)
+      (== `(,e ,out) q)))
+  '((a (set-tag))))
+
+;; won't work correctly, without support for tails!!
+#;(test "remove-elemento-1b"
+  (run 2 (q)
+    (fresh (e out)
+      (remove-elemento e (ext-set empty-set 'a) out)
+      (== `(,e ,out) q)))
+  '((a (set-tag))
+    ((_.0 (set-tag a)) (=/= ((_.0 a))))))
+
+;; broken, until can handle set-unification with tails
+;; (returns duplicate answers)
+#;(test "remove-elemento-1c"
+  (run 3 (q)
+    (fresh (e out)
+      (remove-elemento e (ext-set empty-set 'a) out)
+      (== `(,e ,out) q)))
+  '((a (set-tag))
+    ((_.0 (set-tag a)) (=/= ((_.0 a))))))
+
+;; broken, until can handle set-unification with tails
+;; (returns duplicate answers)
+#;(test "remove-elemento-1d"
+  (run* (q)
+    (fresh (e out)
+      (remove-elemento e (ext-set empty-set 'a) out)
+      (== `(,e ,out) q)))
+  '((a (set-tag))))
+
+;; run* is broken until I support set unification with tails
+;;
+#;(test "remove-elemento-2"
+  (run 2 (q)
+    (fresh (e out)
+      (remove-elemento e (ext-set empty-set 'a 'b) out)
+      (== `(,e ,out) q)))
+  '((b (set-tag a)) (a (set-tag b))))
+
+;; run* is broken until I support set unification with tails
+;;
+#;(test "remove-elemento-3"
+  (run 1 (q)
+    (fresh (e out)
+      (remove-elemento e (ext-set empty-set 'a 'b 'c) out)
+      (== `(,e ,out) q)))
+  '((c (set-tag b a))))
+
 
 (test "termso-1"
   (run* (q) (termso 'z q))

@@ -757,7 +757,8 @@
            (let ((s1 (cdr u))
                  (s2 (cdr v)))
              (unless (and (list? s1) (list? s2))
-               (error 'unify "sets must be length-instantiated proper lists"))
+               (printf "sets must be length-instantiated proper lists\ns1: ~s\ns2: ~s\n" s1 s2)
+               (error 'set= ""))
              ((unify-setso s1 s2) c)))
           ((and (set? u) (var? v))
            (cond
