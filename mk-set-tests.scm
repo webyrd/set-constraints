@@ -665,6 +665,42 @@
   `(,empty-set))
 
 
+(define ai+-plus-plus
+  (lambda (s1 s2 in-set out-set)
+    (conde
+      ((elem '+ s1)
+       (conde
+         ((elem '+ s2)
+          (set= (ext-set in-set '+) out-set))
+         ((not-elem '+ s2)
+          (set= in-set out-set))))
+      ((not-elem '+ s1)
+       (set= in-set out-set)))))
+
+(test "ai+-plus-plus-1"
+  (run* (q) (ai+-plus-plus (make-set '+) (make-set '+) empty-set q))
+  '((set-tag +)))
+
+(test "ai+-plus-plus-2"
+  (run* (q) (ai+-plus-plus (make-set '+) (make-set '+) empty-set (make-set '+)))
+  '(_.0))
+
+(test "ai+-plus-plus-3"
+  (run* (q) (ai+-plus-plus (make-set q) (make-set '+) empty-set (make-set '+)))
+  '(+))
+
+(test "ai+-plus-plus-4"
+  (run* (q)
+    (fresh (x y z)
+      (ai+-plus-plus (make-set x) (make-set y) empty-set (make-set z))
+      (== `(,x ,y ,z) q)))
+  '((+ + +)))
+
+(test "ai+-plus-plus-5"
+  (run* (q) (ai+-plus-plus (make-set '-) (make-set '-) empty-set q))
+  `(,empty-set))
+
+
 ;;; combine multiple a+ relations
 
 (test "ai+-minus/plus-and-plus/minus-1a"
