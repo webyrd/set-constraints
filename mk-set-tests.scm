@@ -344,3 +344,29 @@
 (test "all-freeo-6"
   (run* (q) (all-freeo '(lambda (x) ((y x) z)) empty-set empty-set q))
   '((set-tag y z)))
+
+(test "all-freeo-7"
+  (run 10 (q) (all-freeo q empty-set empty-set (ext-set empty-set 'y 'z)))
+  '((z y)
+    (y z)
+    ((z (lambda (_.0) y)) (=/= ((_.0 y))))
+    ((y (lambda (_.0) z)) (=/= ((_.0 z))))
+    (((lambda (_.0) z) y) (=/= ((_.0 z))))
+    (((lambda (_.0) y) z) (=/= ((_.0 y))))
+    (z (y y))
+    ((lambda (_.0) (z y)) (=/= ((_.0 y)) ((_.0 z))))
+    ((lambda (_.0) (y z)) (=/= ((_.0 y)) ((_.0 z))))
+    (y (z y))))
+
+(test "all-freeo-8"
+  (run 10 (q) (all-freeo q empty-set empty-set (ext-set empty-set 'y 'y 'z)))
+  '((z y)
+    (y z)
+    ((z (lambda (_.0) y)) (=/= ((_.0 y))))
+    ((y (lambda (_.0) z)) (=/= ((_.0 z))))
+    (((lambda (_.0) z) y) (=/= ((_.0 z))))
+    (((lambda (_.0) y) z) (=/= ((_.0 y))))
+    (z (y y))
+    ((lambda (_.0) (z y)) (=/= ((_.0 y)) ((_.0 z))))
+    ((lambda (_.0) (y z)) (=/= ((_.0 y)) ((_.0 z))))
+    (y (z y))))
