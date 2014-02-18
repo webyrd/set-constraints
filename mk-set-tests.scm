@@ -573,6 +573,48 @@
     (- + + 0 -)))
 
 
+
+(define ai+-zero-anything
+  (lambda (s1 s2 in-set out-set)
+    (conde
+      ((elem 0 s1)
+       (set= s2 out-set))
+      ((not-elem 0 s1)
+       (set= in-set out-set)))))
+
+(test "ai+-zero-anything-1a"
+  (run* (q) (ai+-zero-anything (make-set 0) (make-set '-) empty-set q))
+  '((set-tag -)))
+
+(test "ai+-zero-anything-1b"
+  (run* (q) (ai+-zero-anything (make-set 0) (make-set '- 0) empty-set q))
+  '((set-tag - 0)))
+
+(test "ai+-zero-anything-1c"
+  (run* (q) (ai+-zero-anything (make-set 0) (make-set '- 0 '+) empty-set q))
+  '((set-tag - 0 +)))
+
+(test "ai+-zero-anything-2"
+  (run* (q) (ai+-zero-anything (make-set 0) (make-set '-) empty-set (make-set '-)))
+  '(_.0))
+
+(test "ai+-zero-anything-3"
+  (run* (q) (ai+-zero-anything (make-set q) (make-set '-) empty-set (make-set '-)))
+  '(0))
+
+(test "ai+-zero-anything-4"
+  (run* (q)
+    (fresh (x y z)
+      (ai+-zero-anything (make-set x) (make-set y) empty-set (make-set z))
+      (== `(,x ,y ,z) q)))
+  '((0 _.0 _.0)))
+
+(test "ai+-zero-anything-5"
+  (run* (q) (ai+-zero-anything (make-set '+) (make-set '+) empty-set q))
+  `(,empty-set))
+
+
+
 (define ai+-plus-minus
   (lambda (s1 s2 in-set out-set)
     (conde
