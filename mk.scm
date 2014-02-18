@@ -740,7 +740,8 @@
 (define ext-set
   (lambda (old-s . args)
     (unless (set? old-s)
-      (error 'ext-s "first argument must be a set"))
+      (printf "first argument must be a set in (ext-s ~s ~s)\n" old-s args)
+      (error 'ext-s ""))
     (unless (list? old-s)
       (error 'ext-s "provided set is not a length-instantiated proper lists"))
     (let ((ls (cdr old-s)))

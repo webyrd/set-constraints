@@ -1,4 +1,5 @@
 (load "mk.scm")
+(load "matche.scm")
 (load "test-check.scm")
 
 (define anyo
@@ -298,3 +299,48 @@
 (test "not-elem-0"
   (run* (q) (not-elem q (make-set 5 6)))
   '((_.0 (=/= ((_.0 5)) ((_.0 6))))))
+
+
+
+;; find all free variables in a lambda-calculus expression
+(define all-freeo
+  (lambda (exp bound-vars free-in free-out)
+    (matche exp
+      (,x (symbolo x)
+       (conde
+         ((elem x bound-vars)
+          (set= free-in free-out))
+         ((not-elem x bound-vars)
+          (project (free-in)
+            (set= (ext-set free-in x) free-out)))))
+      ((lambda (,x) ,body)
+       (project (bound-vars)
+         (all-freeo body (ext-set bound-vars x) free-in free-out)))
+      ((,e1 ,e2)
+       (fresh (free-in^)
+         (all-freeo e1 bound-vars free-in free-in^)
+         (all-freeo e2 bound-vars free-in^ free-out))))))
+
+(test "all-freeo-1"
+  (run* (q) (all-freeo 'y empty-set empty-set q))
+  '((set-tag y)))
+
+(test "all-freeo-2"
+  (run* (q) (all-freeo '(lambda (z) z) empty-set empty-set q))
+  '((set-tag)))
+
+(test "all-freeo-3"
+  (run* (q) (all-freeo '(lambda (z) w) empty-set empty-set q))
+  '((set-tag w)))
+
+(test "all-freeo-4"
+  (run* (q) (all-freeo '(v w) empty-set empty-set q))
+  '((set-tag v w)))
+
+(test "all-freeo-5"
+  (run* (q) (all-freeo '((lambda (x) x) (lambda (x) x)) empty-set empty-set q))
+  '((set-tag)))
+
+(test "all-freeo-6"
+  (run* (q) (all-freeo '(lambda (x) ((y x) z)) empty-set empty-set q))
+  '((set-tag y z)))
