@@ -268,11 +268,31 @@
     (not-elem q (make-set 5 6)))
   '())
 
-(test "elem-7"
+(test "elem-8"
   (run* (q)
     (not-elem q (make-set 5 6))
     (elem q (make-set 5 6)))
   '())
+
+(test "elem-9"
+  (run* (q)
+    (fresh (x y)
+      (elem q (make-set x y))))
+  '(_.0 _.0))
+
+(test "elem-10"
+  (run* (q)
+    (fresh (x y)
+      (== x y)
+      (elem q (make-set x y))))
+  '(_.0))
+
+(test "elem-11"
+  (run* (q)
+    (fresh (x y)
+      (elem q (make-set x y))
+      (== x y)))
+  '(_.0))
 
 
 (test "not-elem-0"
