@@ -438,8 +438,10 @@
     (((lambda (_.0) (_.1 _.2)) => _.1 _.2) (=/= ((_.0 _.1)) ((_.0 _.2)) ((_.1 _.2))) (sym _.1 _.2))
     (((_.0 (_.1 _.0)) => _.0 _.1) (=/= ((_.0 _.1))) (sym _.0 _.1))))
 
-#!eof
 
+
+;; Broken version of termso
+;;
 ;; From p. 27 of Pierce's 'Types and Programming Languages'
 ;; Using Peano numerals: z, (s z), (s (s z)), etc
 ;;
@@ -463,33 +465,38 @@
       ((== '(s z) i)
        (fresh (S0)
          (termso 'z S0)
-         (set= (ext-set S0 'true 'false) Si)))
-      ((fresh (i-2)
+         (project (S0)
+           (set= (ext-set S0 'true 'false) Si))))
+      ((fresh (i-2 Si-1)
          (== `(s (s ,i-2)) i)
          (fresh (Si-1)
            (termso `(s ,i-2) Si-1)
            (terms-add-singletonso Si-1 Si-1 Si)))))))
 
 ;; adding 'if' seems trickier...
+;;
+;; seems like intensional sets would help here
+;;
+;; or, I could use setof/bagof, although they have their own tradeoffs
 (define terms-add-singletonso
   (lambda (Si-1 S-acc Si)
     (conde
       ((set= empty-set Si-1)
        (set= S-acc Si))
       ((fresh (t Si-1^ S-acc^)
-         (remove-element t Si-1 Si-1^)
-         (set= (ext-set
-                 S-acc
-                 `(succ ,t)
-                 `(pred ,t)
-                 `(iszero ,t))
-               S-acc^)
+         (remove-elemento t Si-1 Si-1^)
+         (project (S-acc)
+           (set= (ext-set
+                  S-acc
+                  `(succ ,t)
+                  `(pred ,t)
+                  `(iszero ,t))
+                 S-acc^))
          (terms-add-singletonso Si-1^ S-acc^ Si))))))
-
 
 ;; Can implement 'remove-element' directly as a miniKanren relation,
 ;; provided set unification supports sets with tails.
-(define remove-element
+(define remove-elemento
   (lambda (e s-in s-out)
     (conde
       ((set= empty-set s-in)
@@ -503,6 +510,23 @@
             (fresh (res)
               (remove-elemento e d res)
               (set= `(set-tag ,a . ,res) s-out)))))))))
+
+(test "termso-1"
+  (run* (q) (termso 'z q))
+  '((set-tag)))
+
+(test "termso-2"
+  (run* (q) (termso '(s z) q))
+  '((set-tag true false)))
+
+;; this test currently doesn't work!
+;;
+;; (test "termso-3"
+;;   (run 1 (q) (termso '(s (s z)) q))
+;;   '???)
+
+#!eof
+
 
 ;; Can implement extend-set as a miniKanren relation, provided set
 ;; unification supports sets with tails.  Seems more general than, but
