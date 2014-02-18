@@ -476,6 +476,47 @@
       (== `(,x ,y ,z) q)))
   '((- - -)))
 
+(test "ai+-minus-minus-5"
+  (run* (q) (ai+-minus-minus (make-set '+) (make-set '+) empty-set q))
+  `(,empty-set))
+
+
+(define ai+-minus-zero
+  (lambda (s1 s2 in-set out-set)
+    (conde
+      ((elem '- s1)
+       (conde
+         ((elem 0 s2)
+          (set= (ext-set in-set '-) out-set))
+         ((not-elem 0 s2)
+          (set= in-set out-set))))
+      ((not-elem '- s1)
+       (set= in-set out-set)))))
+
+(test "ai+-minus-zero-1"
+  (run* (q) (ai+-minus-zero (make-set '-) (make-set 0) empty-set q))
+  '((set-tag -)))
+
+(test "ai+-minus-zero-2"
+  (run* (q) (ai+-minus-zero (make-set '-) (make-set 0) empty-set (make-set '-)))
+  '(_.0))
+
+(test "ai+-minus-zero-3"
+  (run* (q) (ai+-minus-zero (make-set q) (make-set 0) empty-set (make-set '-)))
+  '(-))
+
+(test "ai+-minus-zero-4"
+  (run* (q)
+    (fresh (x y z)
+      (ai+-minus-zero (make-set x) (make-set y) empty-set (make-set z))
+      (== `(,x ,y ,z) q)))
+  '((- 0 -)))
+
+(test "ai+-minus-zero-5"
+  (run* (q) (ai+-minus-zero (make-set '+) (make-set '+) empty-set q))
+  `(,empty-set))
+
+
 (define ai+-minus-plus
   (lambda (s1 s2 in-set out-set)
     (conde
@@ -516,6 +557,10 @@
   '((- +)))
 
 (test "ai+-minus-plus-5"
+  (run* (q) (ai+-minus-plus (make-set '+) (make-set '+) empty-set q))
+  `(,empty-set))
+
+(test "ai+-minus-plus-6"
   (run* (q)
     (fresh (a b x y z)
       (ai+-minus-plus (make-set a) (make-set b) empty-set (make-set x y z))
@@ -568,6 +613,10 @@
   '((+ -)))
 
 (test "ai+-plus-minus-5"
+  (run* (q) (ai+-plus-minus (make-set '+) (make-set '+) empty-set q))
+  `(,empty-set))
+
+(test "ai+-plus-minus-6"
   (run* (q)
     (fresh (a b x y z)
       (ai+-plus-minus (make-set a) (make-set b) empty-set (make-set x y z))
