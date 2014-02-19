@@ -938,6 +938,8 @@
 
 
 
+;; Algorithm 2 code, adapted from Appendix A of 'An Algorithm for
+;; General Set Unification and Its Complexity'
 
 (define uniseto
   (lambda (set1 set2)
