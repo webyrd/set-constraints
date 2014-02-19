@@ -932,9 +932,23 @@
     (((0 _.0 _.1) (0 - +))
      (=/= ((_.0 +)) ((_.0 -)) ((_.1 +)) ((_.1 -))))))
 
+(test "ai+-11-ground"
+  (run 5 (q)
+    (fresh (a b c u v w)
+      (legal-sign a) (legal-sign b) (legal-sign c)
+      (legal-sign u) (legal-sign v) (legal-sign w)
+      (ai+ (make-set a b c) (make-set u v w) (make-set '- 0 '+))
+      (== `((,a ,b ,c) (,u ,v ,w)) q)))
+  '(((- - -) (- - +))
+    ((- - -) (- 0 +))
+    ((- - -) (- + -))
+    ((- - -) (- + 0))
+    ((- - -) (- + +))))
+
 ;; TODO
 ;;
-;; should be able to cut this number down
+;; can I cut these numbers down?
+
 (test "ai+-12"
   (length
     (run* (q)
@@ -942,6 +956,20 @@
         (ai+ (make-set a b c) (make-set u v w) (make-set '- 0 '+))
         (== `((,a ,b ,c) (,u ,v ,w)) q))))
   588)
+
+;; Notice that the ground version has fewer answers.  This must be
+;; because many of the non-ground answers have non-staisfiable
+;; constraints, such as (=/= ((_.0 +)) ((_.0 -)) ((_.0 0))), where _.0
+;; represents an element of the set (that is, a sign)
+(test "ai+-12-ground"
+  (length
+    (run* (q)
+      (fresh (a b c u v w)
+        (legal-sign a) (legal-sign b) (legal-sign c)
+        (legal-sign u) (legal-sign v) (legal-sign w)
+        (ai+ (make-set a b c) (make-set u v w) (make-set '- 0 '+))
+        (== `((,a ,b ,c) (,u ,v ,w)) q))))
+  464)
 
 ;; Busted!  Some of these constraints prohibit an element from taking
 ;; on any legal sign.  One way around this problem is to ground all
