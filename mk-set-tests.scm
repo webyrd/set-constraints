@@ -1075,6 +1075,17 @@
     ((0 + -) (0 + -))
     ((0 + -) (+ 0 -))))
 
+(test "ai+-17"
+  (run* (q)
+    (fresh (a b c u v w)
+      (=/= a b) (=/= a c) (=/= b c)
+      (=/= u v) (=/= u w) (=/= v w)
+      (legal-sign a) (legal-sign b) (legal-sign c)
+      (legal-sign u) (legal-sign v) (legal-sign w)
+      (ai+ (make-set a b c) (make-set u v w) (make-set '- 0))
+      (== `((,a ,b ,c) (,u ,v ,w)) q)))
+  '())
+
 
 
 
