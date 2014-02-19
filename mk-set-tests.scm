@@ -443,7 +443,14 @@
 ;; abstract interpretation of signs, from:
 ;;
 ;; http://matt.might.net/articles/intro-static-analysis/
-;;
+
+(define legal-sign
+  (lambda (x)
+    (conde
+      ((== '- x))
+      ((== 0 x))
+      ((== '+ x)))))
+
 ;; two negative numbers, added together, results in another negative number.
 (define ai+-minus-minus
   (lambda (s1 s2 in-set out-set)
@@ -935,6 +942,109 @@
         (ai+ (make-set a b c) (make-set u v w) (make-set '- 0 '+))
         (== `((,a ,b ,c) (,u ,v ,w)) q))))
   588)
+
+;; Busted!  Some of these constraints prohibit an element from taking
+;; on any legal sign.  One way around this problem is to ground all
+;; variables to legal signs.
+(test "ai+-13"
+  (run 5 (q)
+    (fresh (a b c u v w)
+      (=/= a b)
+      (=/= a c)
+      (=/= b c)
+      (=/= u v)
+      (=/= u w)
+      (=/= v w)
+      (ai+ (make-set a b c) (make-set u v w) (make-set '- 0 '+))
+      (== `((,a ,b ,c) (,u ,v ,w)) q)))
+  '((((0 _.0 _.1) (- + 0))
+     (=/= ((_.0 +)) ((_.0 -)) ((_.0 0)) ; uh oh!!!
+          ((_.0 _.1)) ((_.1 +))
+          ((_.1 -)) ((_.1 0))))
+    (((0 _.0 _.1) (- 0 +))
+     (=/= ((_.0 +)) ((_.0 -)) ((_.0 0)) ((_.0 _.1)) ((_.1 +))
+          ((_.1 -)) ((_.1 0))))
+    (((0 _.0 _.1) (+ - 0))
+     (=/= ((_.0 +)) ((_.0 -)) ((_.0 0)) ((_.0 _.1)) ((_.1 +))
+          ((_.1 -)) ((_.1 0))))
+    (((0 _.0 _.1) (0 + -))
+     (=/= ((_.0 +)) ((_.0 -)) ((_.0 0)) ((_.0 _.1)) ((_.1 +))
+          ((_.1 -)) ((_.1 0))))
+    (((0 _.0 _.1) (0 - +))
+     (=/= ((_.0 +)) ((_.0 -)) ((_.0 0)) ((_.0 _.1)) ((_.1 +))
+          ((_.1 -)) ((_.1 0))))))
+
+(test "ai+-14"
+  (length
+    (run* (q)
+      (fresh (a b c u v w)
+        (=/= a b)
+        (=/= a c)
+        (=/= b c)
+        (=/= u v)
+        (=/= u w)
+        (=/= v w)
+        (ai+ (make-set a b c) (make-set u v w) (make-set '- 0 '+))
+        (== `((,a ,b ,c) (,u ,v ,w)) q))))
+  432)
+
+(test "ai+-15"
+  (length
+    (run* (q)
+      (fresh (a b c u v w)
+        (=/= a b) (=/= a c) (=/= b c)
+        (=/= u v) (=/= u w) (=/= v w)
+        (legal-sign a) (legal-sign b) (legal-sign c)
+        (legal-sign u) (legal-sign v) (legal-sign w)
+        (ai+ (make-set a b c) (make-set u v w) (make-set '- 0 '+))
+        (== `((,a ,b ,c) (,u ,v ,w)) q))))
+  36)
+
+(test "ai+-16"
+  (run* (q)
+    (fresh (a b c u v w)
+      (=/= a b) (=/= a c) (=/= b c)
+      (=/= u v) (=/= u w) (=/= v w)
+      (legal-sign a) (legal-sign b) (legal-sign c)
+      (legal-sign u) (legal-sign v) (legal-sign w)
+      (ai+ (make-set a b c) (make-set u v w) (make-set '- 0 '+))
+      (== `((,a ,b ,c) (,u ,v ,w)) q)))
+  '(((- 0 +) (- 0 +))
+    ((- 0 +) (- + 0))
+    ((- 0 +) (0 - +))
+    ((- 0 +) (0 + -))
+    ((- 0 +) (+ - 0))
+    ((- 0 +) (+ 0 -))
+    ((0 - +) (- 0 +))
+    ((0 - +) (- + 0))
+    ((0 - +) (0 - +))
+    ((0 - +) (0 + -))
+    ((0 - +) (+ - 0))
+    ((0 - +) (+ 0 -))
+    ((- + 0) (- 0 +))
+    ((- + 0) (- + 0))
+    ((- + 0) (0 - +))
+    ((- + 0) (0 + -))
+    ((- + 0) (+ - 0))
+    ((- + 0) (+ 0 -))
+    ((+ - 0) (- 0 +))
+    ((+ - 0) (- + 0))
+    ((+ - 0) (0 - +))
+    ((+ - 0) (0 + -))
+    ((+ - 0) (+ - 0))
+    ((+ - 0) (+ 0 -))
+    ((+ 0 -) (- 0 +))
+    ((+ 0 -) (- + 0))
+    ((+ 0 -) (0 - +))
+    ((+ 0 -) (0 + -))
+    ((+ 0 -) (+ - 0))
+    ((+ 0 -) (+ 0 -))
+    ((0 + -) (- 0 +))
+    ((0 + -) (- + 0))
+    ((0 + -) (0 - +))
+    ((0 + -) (+ - 0))
+    ((0 + -) (0 + -))
+    ((0 + -) (+ 0 -))))
 
 
 
