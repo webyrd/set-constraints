@@ -948,7 +948,8 @@
 ;; TODO
 ;;
 ;; can I cut these numbers down?
-
+;;
+;; For one thing, I should use sets that support tails.
 (test "ai+-12"
   (length
     (run* (q)
