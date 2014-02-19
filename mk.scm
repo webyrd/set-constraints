@@ -926,6 +926,75 @@
          (membo x B)
          (subset-ofo rest B))))))
 
+
+
+
+
+
+
+
+
+(define uniseto
+  (lambda (set1 set2)
+    (fresh (rest1 rest2 n m)
+      (uniset-alphao set1 set2 rest1 rest2 `(s (s ,n)))
+      (uniset-alphao rest2 rest1 '() '() `(s ,m)))))
+
+(define alphao
+  (lambda (set1 set2 rest1 rest2 num0)
+    (conde
+      ((== '() set1)
+       (== '() rest1)
+       (== rest2 set2))
+      ((fresh (elem set1^ num1 rest3 res)
+         (== `(,elem . ,set1^) set1)
+         (prolog-copy-termo num0 num1)
+         (betao elem set2 rest2 num1)
+         (alphao set1^ rest2 rest1 rest3 num0)))
+      ((fresh (elem set1^ rest1^)
+         (== `(,elem . ,set1^) set1)
+         (== `(,elem . ,rest1^) rest1)
+         (alphao set1^ set2 rest1^ rest2 num0))))))
+
+(define betao
+  (lambda (elem set rest num)
+    (conde
+      ((== '() set)
+       (== '() rest)
+       (== 0 num))
+      ((fresh (set^ num-1)
+         (== `(,elem . ,set^) set)
+         (== `(s ,num-1) num)
+         (betao elem set^ rest num-1)))
+      ((fresh (elem2 set^ rest^)
+         (== `(,elem2 . ,set^) set)
+         (== `(,elem2 . ,rest^) rest)
+         (betao elem set^ rest^ num))))))
+
+(define prolog-copy-termo
+  (lambda (t-in t-out)
+    (project (t-in)
+      (let-values ([(t-in _) (replace-vars t-in '())])
+        (== t-in t-out)))))
+
+(define replace-vars
+  (lambda (t env)
+    (cond
+      ((var? t)
+       (cond
+         ((assq t env) =>
+          (lambda (p)
+            (values (cdr p) env)))
+         (else
+          (let ((v (var 'copy)))
+            (values v `((,t . ,v) . ,env))))))
+      ((pair? t)
+       (let-values ([(t1 env^) (replace-vars (car t) env)])
+         (let-values ([(t2 env^^) (replace-vars (cdr t) env^)])
+           (values (cons t1 t2) env^^))))
+      (else (values t env)))))
+
+
 ;; *** end set constraints ***
 
 
