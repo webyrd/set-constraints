@@ -941,11 +941,32 @@
 ;; Algorithm 2 code, adapted from Appendix A of 'An Algorithm for
 ;; General Set Unification and Its Complexity'
 
+;; vanilla set unification
+;;
+;; (define uniseto
+;;   (lambda (set1 set2)
+;;     (fresh (rest1 rest2 n m)
+;;       (alphao set1 set2 rest1 rest2 `(s (s ,n)))
+;;       (alphao rest2 rest1 '() '() `(s ,m)))))
+
+;; Remove syntactic duplicates from set1 and set2
 (define uniseto
-  (lambda (set1 set2)
-    (fresh (rest1 rest2 n m)
-      (alphao set1 set2 rest1 rest2 `(s (s ,n)))
-      (alphao rest2 rest1 '() '() `(s ,m)))))
+  (letrec ((remove-dups
+            (lambda (ls)
+              (cond
+                ((var? ls) ls)
+                ((null? ls) '())
+                ((memp (lambda (y) (term=? (car ls) y '())) (cdr ls))
+                 (remove-dups (cdr ls)))
+                (else (cons (car ls) (remove-dups (cdr ls))))))))
+    (lambda (set1 set2)
+      (fresh (rest1 rest2 n m)
+        (project (set1 set2)
+          (let ((set1 (remove-dups set1))
+                (set2 (remove-dups set2)))
+            (fresh ()
+              (alphao set1 set2 rest1 rest2 `(s (s ,n)))
+              (alphao rest2 rest1 '() '() `(s ,m)))))))))
 
 (define alphao
   (lambda (set1 set2 rest1 rest2 num0)
