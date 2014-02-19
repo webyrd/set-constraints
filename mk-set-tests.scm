@@ -451,7 +451,8 @@
       ((elem '- s1)
        (conde
          ((elem '- s2)
-          (set= (ext-set in-set '-) out-set))
+          (project (in-set)
+            (set= (ext-set in-set '-) out-set)))
          ((not-elem '- s2)
           (set= in-set out-set))))
       ((not-elem '- s1)
@@ -487,7 +488,8 @@
       ((elem '- s1)
        (conde
          ((elem 0 s2)
-          (set= (ext-set in-set '-) out-set))
+          (project (in-set)
+            (set= (ext-set in-set '-) out-set)))
          ((not-elem 0 s2)
           (set= in-set out-set))))
       ((not-elem '- s1)
@@ -523,7 +525,8 @@
       ((elem '- s1)
        (conde
          ((elem '+ s2)
-          (set= (ext-set in-set '- 0 '+) out-set))
+          (project (in-set)
+            (set= (ext-set in-set '- 0 '+) out-set)))
          ((not-elem '+ s2)
           (set= in-set out-set))))
       ((not-elem '- s1)
@@ -621,7 +624,8 @@
       ((elem '+ s1)
        (conde
          ((elem '- s2)
-          (set= (ext-set in-set '- 0 '+) out-set))
+          (project (in-set)
+            (set= (ext-set in-set '- 0 '+) out-set)))
          ((not-elem '- s2)
           (set= in-set out-set))))
       ((not-elem '+ s1)
@@ -677,7 +681,8 @@
       ((elem '+ s1)
        (conde
          ((elem 0 s2)
-          (set= (ext-set in-set '+) out-set))
+          (project (in-set)
+            (set= (ext-set in-set '+) out-set)))
          ((not-elem 0 s2)
           (set= in-set out-set))))
       ((not-elem '+ s1)
@@ -713,7 +718,8 @@
       ((elem '+ s1)
        (conde
          ((elem '+ s2)
-          (set= (ext-set in-set '+) out-set))
+          (project (in-set)
+            (set= (ext-set in-set '+) out-set)))
          ((not-elem '+ s2)
           (set= in-set out-set))))
       ((not-elem '+ s1)
@@ -811,6 +817,74 @@
     ((set-tag - +) (set-tag - +) (set-tag - 0 +))
     ((set-tag + -) (set-tag + -) (set-tag - 0 +))
     ((set-tag - +) (set-tag + -) (set-tag - 0 +))))
+
+
+;; combine all the ai + relations
+(define ai+
+  (lambda (s1 s2 s3)
+    (fresh (res1 res2 res3 res4 res5 res6)
+      (ai+-minus-minus s1 s2 empty-set res1)
+      (ai+-minus-zero s1 s2 res1 res2)
+      (ai+-minus-plus s1 s2 res2 res3)
+      (ai+-zero-anything s1 s2 res3 res4)
+      (ai+-plus-minus s1 s2 res4 res5)
+      (ai+-plus-zero s1 s2 res5 res6)
+      (ai+-plus-plus s1 s2 res6 s3))))
+
+(test "ai+-1"
+  (run* (q) (ai+ (make-set '+) (make-set '+) q))
+  '((set-tag +)))
+
+;; TODO
+;;
+;; make a smarter set extension that will avoid adding syntactically duplicate elements.
+(test "ai+-2"
+  (run* (q) (ai+ (make-set '- '+) (make-set '+) q))
+  '((set-tag - 0 + +)))
+
+(test "ai+-3"
+  (run* (q)
+    (fresh (x y)
+      (ai+ (make-set x) (make-set y) (make-set '+))
+      (== `(,x ,y) q)))
+  '((0 +)
+    (+ +)
+    (+ 0)))
+
+(test "ai+-4"
+  (run* (q)
+    (fresh (x y)
+      (ai+ (make-set x) (make-set y) (make-set '- 0 '+))
+      (== `(,x ,y) q)))
+  '((+ -)
+    (- +)))
+
+(test "ai+-5"
+  (run* (q)
+    (fresh (x y)
+      (ai+ (make-set x) (make-set y) (make-set '- '+))
+      (== `(,x ,y) q)))
+  '())
+
+(test "ai+-6"
+  (run* (q)
+    (ai+ (make-set 0) (make-set 0 '+) q))
+  '((set-tag 0 +)))
+
+(test "ai+-7"
+  (run* (q)
+    (fresh (x y)
+      (ai+ (make-set x) (make-set y) (make-set 0 '+))
+      (== `(,x ,y) q)))
+  '())
+
+(test "ai+-8"
+  (run* (q)
+    (fresh (x y z)
+      (ai+ (make-set x) (make-set y z) (make-set 0 '+))
+      (== `(,x ,y ,z) q)))
+  '((0 + 0)
+    (0 0 +)))
 
 
 
