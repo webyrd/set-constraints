@@ -759,7 +759,12 @@
              (unless (and (list? s1) (list? s2))
                (printf "sets must be length-instantiated proper lists\ns1: ~s\ns2: ~s\n" s1 s2)
                (error 'set= ""))
-             ((unify-setso s1 s2) c)))
+             
+             ((unify-setso s1 s2) c)
+
+             ;;((uniseto s1 s2) c)
+             
+             ))
           ((and (set? u) (var? v))
            (cond
              ((ext-S v u S) =>
@@ -937,8 +942,8 @@
 (define uniseto
   (lambda (set1 set2)
     (fresh (rest1 rest2 n m)
-      (uniset-alphao set1 set2 rest1 rest2 `(s (s ,n)))
-      (uniset-alphao rest2 rest1 '() '() `(s ,m)))))
+      (alphao set1 set2 rest1 rest2 `(s (s ,n)))
+      (alphao rest2 rest1 '() '() `(s ,m)))))
 
 (define alphao
   (lambda (set1 set2 rest1 rest2 num0)
@@ -946,11 +951,11 @@
       ((== '() set1)
        (== '() rest1)
        (== rest2 set2))
-      ((fresh (elem set1^ num1 rest3 res)
+      ((fresh (elem set1^ num1 rest^ res)
          (== `(,elem . ,set1^) set1)
          (prolog-copy-termo num0 num1)
-         (betao elem set2 rest2 num1)
-         (alphao set1^ rest2 rest1 rest3 num0)))
+         (betao elem set2 rest^ num1)
+         (alphao set1^ rest^ rest1 rest2 num0)))
       ((fresh (elem set1^ rest1^)
          (== `(,elem . ,set1^) set1)
          (== `(,elem . ,rest1^) rest1)

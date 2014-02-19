@@ -1,3 +1,19 @@
+(load "mk.scm")
+(load "test-check.scm")
+
+(test "copy-termo-0"
+  (run* (q) (fresh (t1 t2 x) (prolog-copy-termo t1 t2) (== `(,t1 ,t2) q)))
+  '((_.0 _.1)))
+
+(test "copy-termo-1"
+  (run* (q) (fresh (t1 t2 x) (== `(,x) t1) (prolog-copy-termo t1 t2) (== `(,t1 ,t2) q)))
+  '(((_.0) (_.1))))
+
+(test "copy-termo-2"
+  (run* (q) (fresh (t1 t2 x y) (== `(5 ,x ,y ,x 6) t1) (prolog-copy-termo t1 t2) (== `(,t1 ,t2) q)))
+  '(((5 _.0 _.1 _.0 6) (5 _.2 _.3 _.2 6))))
+
+
 (test "membo-1"
   (run* (q) (membo 'x '(x)))
   '(_.0))
@@ -231,6 +247,138 @@
               (unify-setso A B)
               (== `(,A ,B) q))))
   9)
+
+
+
+
+
+
+
+
+
+
+
+
+(test "uniseto-a"
+  (run* (q) (uniseto '() '()))
+  '(_.0))
+
+(test "uniseto-b"
+  (run* (q) (uniseto '(5) '(5)))
+  '(_.0))
+
+(test "uniseto-0"
+  (run* (q) (uniseto '(5 6) '(5 5 6)))
+  '(_.0))
+
+(test "uniseto-1"
+  (run* (q) (uniseto '(5 6) '(5 6)))
+  '(_.0))
+
+(test "uniseto-2"
+  (run* (q) (uniseto '(5 6) '(6 5)))
+  '(_.0))
+
+(test "uniseto-3"
+  (run* (q)
+    (fresh (x y)
+      (uniseto '(5 6) `(,x ,y))
+      (== `(,x ,y) q)))
+  '((5 6)
+    (6 5)))
+
+(test "uniseto-4"
+  (run* (q)
+    (fresh (A B u v x y)
+      (== `(,u ,v) A)
+      (== `(,x ,y) B)
+      (uniseto A B)
+      (== `(,A ,B) q)))
+  '(((_.0 _.1) (_.1 _.0))
+    ((_.0 _.1) (_.0 _.1))))
+
+(test "uniseto-5"
+  (run 20 (q)
+    (fresh (A B)
+      (uniseto A B)
+      (== `(,A ,B) q)))
+  '((() ())
+    ((_.0) (_.0))
+    ((_.0) (_.0 _.0))
+    ((_.0 _.0) (_.0))
+    ((_.0 _.1) (_.1 _.0))
+    ((_.0 _.1) (_.0 _.1))
+    ((_.0 _.0 _.0) (_.0))
+    ((_.0 _.1 _.1) (_.1 _.0))
+    ((_.0 _.1 _.0) (_.0 _.1))
+    ((_.0 _.0 _.1) (_.1 _.0))
+    ((_.0 _.0 _.1) (_.0 _.1))
+    ((_.0 _.1 _.2) (_.2 _.1 _.0))
+    ((_.0 _.0 _.0 _.0) (_.0))
+    ((_.0 _.1 _.0) (_.1 _.0))
+    ((_.0 _.1 _.2) (_.2 _.0 _.1))
+    ((_.0 _.1 _.1 _.1) (_.1 _.0))
+    ((_.0) (_.0 _.0 _.0))
+    ((_.0 _.1 _.1) (_.0 _.1))
+    ((_.0 _.1) (_.1 _.0 _.0))
+    ((_.0 _.1 _.2) (_.1 _.2 _.0))))
+
+(test "uniseto-experiment-1a"
+;; experiment 1 on p. 10 of Stolzenburg's 'Membership-Constraints and
+;; Complexity in Logic Programming with Sets'
+  (run* (A)
+    (fresh (B w x y z)
+      (== `(,w ,x ,y ,z) A)
+      (== '(a b) B)
+      (uniseto A B)))
+  '((b a a a)
+    (a b a a)
+    (b b a a)
+    (a a b a)
+    (b a b a)
+    (a b b a)
+    (a a a b)
+    (b b b a)
+    (b a a b)
+    (a b a b)
+    (b b a b)
+    (a a b b)
+    (b a b b)
+    (a b b b)))
+
+(test "uniseto-experiment-1b"
+;; experiment 1 on p. 10 of Stolzenburg's 'Membership-Constraints and
+;; Complexity in Logic Programming with Sets'  
+  (length
+   (run* (A)
+    (fresh (B w x y z)
+      (== `(,w ,x ,y ,z) A)
+      (== '(a b) B)
+      (uniseto A B))))
+  14)
+
+(test "uniseto-experiment-2b"
+  ;; experiment 2 on p. 10 of Stolzenburg's 'Membership-Constraints and
+  ;; Complexity in Logic Programming with Sets'
+  (length
+   (run* (q)
+     (fresh (A B x y z)
+       (== `(,x ,y ,z) A)
+       (== `(,x ,y ,z) B)
+       (uniseto A B)
+       (== `(,A ,B) q))))
+  15)
+
+(test "uniseto-experiment-3b"
+  ;; experiment 3 on p. 10 of Stolzenburg's 'Membership-Constraints and
+  ;; Complexity in Logic Programming with Sets'
+  (length (run* (q)
+            (fresh (A B x y1 z1 y2 z2)
+              (== `(,x (f ,y1) (g ,y1) (g ,z1)) A)
+              (== `(,x (f ,y2) (g ,y2) (g ,z2)) B)
+              (uniseto A B)
+              (== `(,A ,B) q))))
+  17)
 
 
 #!eof
