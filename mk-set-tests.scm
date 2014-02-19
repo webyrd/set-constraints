@@ -871,6 +871,8 @@
     (ai+ (make-set 0) (make-set 0 '+) q))
   '((set-tag 0 +)))
 
+;; Interesting: If s1 and s2 are singleton sets, (ai+ s1 s2 s3) cannot
+;; produce s3 = {0 +}
 (test "ai+-7"
   (run* (q)
     (fresh (x y)
