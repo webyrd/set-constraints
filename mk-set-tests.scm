@@ -1087,6 +1087,72 @@
   '())
 
 
+;; hack, since this version of mk doesn't support CLP(fd)
+(define ai-int
+  (lambda (n aval)
+    (conde
+      ((== -1 n) (set= (make-set '-) aval))
+      ((== 0 n) (set= (make-set 0) aval))
+      ((== 1 n) (set= (make-set '+) aval)))))
+
+;; hmm--this looks problematic
+;;
+;; if val is a set, and I must use set= instead of == to deal with
+;; sets, aren't I in trouble?
+(define lookupo
+  (lambda (x env val)
+    (fresh (y v rest)
+      (== `((,y . ,v) . ,rest) env)
+      (conde
+        ((== x y)
+         (== v val))
+        ((=/= x y)
+         (lookupo x rest val))))))
+
+(define exp-aeval
+  (lambda (exp aenv aval)
+    (conde
+      ((symbolo exp)
+       (lookupo exp aenv aval))
+      ((numbero exp)
+       (ai-int exp aval))
+      ((fresh (e1 e2 s1 s2)
+         (== `(+ ,e1 ,e2) exp)
+         (exp-aeval e1 aenv s1)
+         (exp-aeval e2 aenv s2)
+         (ai+ s1 s2 aval)))
+      ((fresh (e1 e2)
+         (== `(= ,e1 ,e2) exp)
+         (set= (make-set '- 0 '+) aval))))))
+
+(test "exp-aeval-minus-1"
+  (run* (q) (exp-aeval '-1 '() q))
+  '((set-tag -)))
+
+(test "exp-aeval-0"
+  (run* (q) (exp-aeval '0 '() q))
+  '((set-tag 0)))
+
+(test "exp-aeval-1"
+  (run* (q) (exp-aeval '1 '() q))
+  '((set-tag +)))
+
+(test "exp-aeval-2"
+  (run 5 (q) (exp-aeval q '() (make-set 0)))
+  '(0
+    (+ 0 0)
+    (+ 0 (+ 0 0))
+    (+ 0 (+ 0 (+ 0 0)))
+    (+ (+ 0 0) 0)))
+
+(test "exp-aeval-3"
+  (run 5 (q) (exp-aeval q '() (make-set '+)))
+  '(1
+    (+ 0 1)
+    (+ 1 0)
+    (+ 1 1)
+    (+ (= _.0 _.1) 1)))
+
 
 
 ;; Broken version of termso
